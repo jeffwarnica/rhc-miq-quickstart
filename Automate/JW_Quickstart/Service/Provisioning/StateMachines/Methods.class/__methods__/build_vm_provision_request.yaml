@@ -4,10 +4,12 @@ version: 1.0
 object:
   attributes:
     name: build_vm_provision_request
-    display_name: 
-    description: 
+    display_name:
+    description:
     scope: instance
     language: ruby
     location: inline
+    embedded_methods:
+    - "/StdLib/Core/Core"
     options: {}
   inputs: []
