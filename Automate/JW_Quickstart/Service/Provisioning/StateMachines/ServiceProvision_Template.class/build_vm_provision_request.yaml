@@ -15,4 +15,3 @@ object:
   - post1:
       value: "/Service/Provisioning/StateMachines/Methods/check_vm_provision_requests"
       on_exit: "#"
-
