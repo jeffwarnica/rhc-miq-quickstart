@@ -12,3 +12,6 @@ object:
       value: "/Service/Provisioning/StateMachines/Methods/DialogParser"
   - pre2:
       value: "/Service/Provisioning/StateMachines/Methods/build_vm_provision_request"
+  - post1:
+      value: "/Service/Provisioning/StateMachines/Methods/check_vm_provision_requests"
+
