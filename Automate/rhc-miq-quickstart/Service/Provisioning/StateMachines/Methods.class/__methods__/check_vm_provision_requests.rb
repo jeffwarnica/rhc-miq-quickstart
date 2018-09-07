@@ -8,7 +8,7 @@
 # jwarnica@redhat.com 2018-08-16 - Move to class format and longer loging
 
 
-module JW_Quickstart
+module RhcMiqQuickstart
   module Automate
     module Service
       module Provisioning
@@ -75,5 +75,5 @@ module JW_Quickstart
 end
 
 if __FILE__ == $PROGRAM_NAME
-  JW_Quickstart::Automate::Service::Provisioning::StateMachines::CheckVmProvisionRequests.new.main
+  RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::CheckVmProvisionRequests.new.main
 end

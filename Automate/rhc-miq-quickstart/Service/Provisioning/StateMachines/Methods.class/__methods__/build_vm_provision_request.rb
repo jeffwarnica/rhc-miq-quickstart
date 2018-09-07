@@ -22,7 +22,7 @@
 #   limitations under the License.
 #-------------------------------------------------------------------------------
 
-module JW_Quickstart
+module RhcMiqQuickstart
   module Automate
     module Service
       module Provisioning
@@ -414,5 +414,5 @@ module JW_Quickstart
 end #module
 
 if __FILE__ == $PROGRAM_NAME
-  JW_Quickstart::Automate::Service::Provisioning::StateMachines::BuildVmProvisionRequest.new.main()
+  RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::BuildVmProvisionRequest.new.main()
 end
