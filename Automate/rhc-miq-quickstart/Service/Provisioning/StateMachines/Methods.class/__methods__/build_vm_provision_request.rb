@@ -148,14 +148,59 @@ module RhcMiqQuickstart
               log(:info, "Processing get_requester...Complete", true)
             end
 
+            # Search for a template with the priority of
+            #  guid
+            #  ~~~name
+            #  ~~~"product"
+            #  OS
             def get_template(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_template...", true)
-              @template = @handle.vmdb(:miq_template).where("guid = '#{merged_options_hash[:guid]}'").first
+              log(:info, 'Processing get_template...', true)
+
+              template_search_by_guid = merged_options_hash[:guid]
+              # template_search_by_name = merged_options_hash[:template] || merged_options_hash[:name]
+              # template_search_by_product = merged_options_hash[:product]
+              template_search_by_os = merged_options_hash[:os]
+
+              templates = []
+              templates = get_templates_by_guid(template_search_by_guid) if template_search_by_guid
+
+              templates = get_templates_by_os(template_search_by_os) if template_search_by_os && templates.blank?
+
+              # TODO: Implement "best" template logic here
+
+              # get the first template in the list
+              @template = templates.first
+
               log(:info, "Build: #{build} - template: #{@template.name} guid: #{@template.guid} " \
-        "on provider: #{@template.ext_management_system.name}")
+                "on provider: #{@template.ext_management_system.name}")
               merged_options_hash[:name] = @template.name
               merged_options_hash[:guid] = @template.guid
-              log(:info, "Processing get_template...Complete", true)
+              log(:info, 'Processing get_template...Complete', true)
+            end
+
+            def get_templates_by_guid(guid)
+              log(:info, "Searching for templates tagged with #{@rbac_array} that " \
+                "match guid: #{guid}")
+              templates = @handle.vmdb(:miq_template).all.select do |t|
+                object_eligible?(t) && t.ext_management_system && t.guid == guid
+              end
+              if templates.empty?
+                error('Unable to find a matching template. Is RBAC configured?')
+              end
+              templates
+            end
+
+            def get_templates_by_os(os)
+              os_category = 'os'
+              log(:info, "Searching for templates tagged with #{@rbac_array} that " \
+                "{#{os_category.to_sym}=>#{os}}")
+              templates = @handle.vmdb(:miq_template).all.select do |t|
+                object_eligible?(t) && t.ext_management_system && t.tagged_with?(os_category, os)
+              end
+              if templates.empty?
+                error('Unable to find a matching template. Is RBAC configured, and template(s) tagged correctly?')
+              end
+              templates
             end
 
             def get_provision_type(build, merged_options_hash, merged_tags_hash)
@@ -180,7 +225,7 @@ module RhcMiqQuickstart
 
             def get_vm_name(build, merged_options_hash, merged_tags_hash)
               log(:info, "Processing get_vm_name", true)
-              new_vm_name = merged_options_hash[:vm_name] || merged_options_hash[:vm_target_name]
+              new_vm_name = merged_options_hash[:vm_name] || merged_options_hash[:vm_target_name] || 'changeme'
               proposed_vm_name = nil
               if new_vm_name.include?('*')
                 log(:info, "Processing VM name prepended by *")
@@ -229,10 +274,18 @@ module RhcMiqQuickstart
 
             def get_flavor(build, merged_options_hash, merged_tags_hash)
               log(:info, "Processing get_flavor...", true)
-              merged_options_hash[:number_of_sockets] = 1
-              # Rest from dialog.
-              #merged_options_hash[:cores_per_socket]  = cores_per_socket
-              #merged_options_hash[:vm_memory]         = vm_memory
+
+              flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
+              log(:info, flavors) if @DEBUG
+
+              flavor = flavors.find{|f| f[:flavor_name] == merged_options_hash[:flavor]}
+              error("Unable to locate flavor: [#{merged_options_hash[:flavor]}]") unless flavor
+
+              %i[number_of_sockets cores_per_socket vm_memory].each do |sym|
+                merged_options_hash[sym] = flavor[sym]
+              end
+
+              # TODO: reimplement cloud flavor mapping
               log(:info, "Processing get_flavor...Complete", true)
             end
 
@@ -272,6 +325,9 @@ module RhcMiqQuickstart
 
                 # get requester (figure out who the requester/user is)
                 get_requester(build, merged_options_hash, merged_tags_hash)
+
+                # now that we have the requester get the users' rbac tag filters
+                @rbac_array = get_current_group_rbac_array
 
                 # get template (search for an available template)
                 get_template(build, merged_options_hash, merged_tags_hash)
@@ -406,6 +462,31 @@ module RhcMiqQuickstart
               exit MIQ_ABORT
             end #main
 
+            # TODO: Move this from here (and list_template_guids.rb) to StdLib
+
+            private
+
+            def get_current_group_rbac_array
+              rbac_array = []
+              unless @user.current_group.filters.blank?
+                @user.current_group.filters['managed'].flatten.each do |filter|
+                  next unless /(?<category>\w*)\/(?<tag>\w*)$/i =~ filter
+                  rbac_array << {category=>tag}
+                end
+              end
+              log(:info, "@user: #{@user.userid} RBAC filters: #{rbac_array}")
+              rbac_array
+            end
+
+            def object_eligible?(obj)
+              return false if obj.archived || obj.orphaned
+              @rbac_array.each do |rbac_hash|
+                rbac_hash.each do |rbac_category, rbac_tags|
+                  Array.wrap(rbac_tags).each {|rbac_tag_entry| return false unless obj.tagged_with?(rbac_category, rbac_tag_entry) }
+                end
+                true
+              end
+            end
           end #class
         end
       end
