@@ -9,5 +9,8 @@ object:
     scope: instance
     language: ruby
     location: inline
+    embedded_methods:
+    - "/Common/FlavorConfig/Flavorconfig"
+    - "/StdLib/Core/Core"
     options: {}
   inputs: []
