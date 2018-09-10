@@ -3,8 +3,11 @@ object_type: method
 version: 1.0
 object:
   attributes:
-    display_name: 
     name: flavorconfig
-    inherits: 
-    description: 
-  fields:
+    display_name:
+    description:
+    scope: instance
+    language: ruby
+    location: inline
+    options: {}
+  inputs: []
