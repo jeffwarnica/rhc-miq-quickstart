@@ -4,9 +4,9 @@ version: 1.0
 object:
   attributes:
     display_name: 
-    name: list_template_guids
+    name: list_flavors
     inherits: 
     description: 
   fields:
   - method1:
-      value: list_template_guids
+      value: list_flavors
