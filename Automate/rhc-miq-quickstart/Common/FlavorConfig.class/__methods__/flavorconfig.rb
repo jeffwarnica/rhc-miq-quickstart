@@ -2,6 +2,10 @@ module RhcMiqQuickstart
   module Automate
     module Common
       class FlavorConfig
+
+        # reference later with
+        # flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
+
         FLAVORS = [
           { flavor_name: 'xsmall', number_of_sockets: 1, cores_per_socket: 1, vm_memory: 1024 },
           { flavor_name: 'small',  number_of_sockets: 1, cores_per_socket: 1, vm_memory: 2048 },
