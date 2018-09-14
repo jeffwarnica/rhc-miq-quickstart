@@ -1,4 +1,3 @@
-#begin
 #  build_vm_provision_request.rb
 
 #  Original Author: Kevin Morey <kevin@redhat.com>
@@ -34,33 +33,33 @@ module RhcMiqQuickstart
               @handle = handle
               @DEBUG = true
 
-              @task = @handle.root['service_template_provision_task']
+              @task = get_stp_task
               @service = @task.destination
 
             end
 
             # create the categories and tags
-            def create_tags(category, single_value = true, tag)
-              log(:info, "Processing create_tags...", true)
+            def create_tags(category, tag, single_value = true)
+              log(:info, 'Processing create_tags...', true)
               # Convert to lower case and replace all non-word characters with underscores
               category_name = category.to_s.downcase.gsub(/\W/, '_')
               tag_name = tag.to_s.downcase.gsub(/\W/, '_')
 
               unless @handle.execute('category_exists?', category_name)
                 log(:info, "Category #{category_name} doesn't exist, creating category")
-                @handle.execute('category_create', :name => category_name, :single_value => single_value, :description => "#{category}")
+                @handle.execute('category_create', name: category_name, single_value: single_value, description: category.to_s)
               end
               # if the tag exists else create it
               unless @handle.execute('tag_exists?', category_name, tag_name)
                 log(:info, "Adding new tag #{tag_name} in Category #{category_name}")
-                @handle.execute('tag_create', category_name, :name => tag_name, :description => "#{tag}")
+                @handle.execute('tag_create', category_name, name: tag_name, description: tag.to_s)
               end
-              log(:info, "Processing create_tags...Complete", true)
+              log(:info, 'Processing create_tags...Complete', true)
             end
 
             def process_tag(tag_category, tag_value)
               return if tag_value.blank?
-              create_tags(tag_category, true, tag_value)
+              create_tags(tag_category, tag_value, true)
             end
 
             # fix_dialog_tags_hash to allow for support of Tag Control items in dialogs.  Previously, the Tag Control would
@@ -81,7 +80,7 @@ module RhcMiqQuickstart
             end
 
             def yaml_data(option)
-              @task.get_option(option).nil? ? nil : YAML.load(@task.get_option(option))
+              @task.get_option(option).nil? ? nil : YAML.safe_load(@task.get_option(option))
             end
 
             # check to ensure that dialog_parser has ran
@@ -89,7 +88,7 @@ module RhcMiqQuickstart
               dialog_options_hash = yaml_data(:parsed_dialog_options)
               dialog_tags_hash = yaml_data(:parsed_dialog_tags)
               if dialog_options_hash.blank? && dialog_tags_hash.blank?
-                log(:info, "Instantiating dialog_parser to populate dialog options")
+                log(:info, 'Instantiating dialog_parser to populate dialog options')
                 @handle.instantiate('/Service/Provisioning/StateMachines/Methods/DialogParser')
                 dialog_options_hash = yaml_data(:parsed_dialog_options)
                 dialog_tags_hash = yaml_data(:parsed_dialog_tags)
@@ -101,12 +100,12 @@ module RhcMiqQuickstart
             end
 
             def merge_service_item_dialog_values(build, dialogs_hash)
-              merged_hash = Hash.new { |h, k| h[k] = {} }
-              if dialogs_hash[0].nil?
-                merged_hash = dialogs_hash[build] || {}
-              else
-                merged_hash = dialogs_hash[0].merge(dialogs_hash[build] || {})
-              end
+              # merged_hash = Hash.new { |h, k| h[k] = {} }
+              merged_hash = if dialogs_hash[0].nil?
+                              dialogs_hash[build] || {}
+                            else
+                              dialogs_hash[0].merge(dialogs_hash[build] || {})
+                            end
               merged_hash
             end
 
@@ -116,7 +115,7 @@ module RhcMiqQuickstart
               merged_tags_hash = merge_service_item_dialog_values(build, dialog_tags_hash)
               log(:info, "build: #{build} merged_options_hash: #{merged_options_hash.inspect}")
               log(:info, "build: #{build} merged_tags_hash: #{merged_tags_hash.inspect}")
-              return merged_options_hash, merged_tags_hash
+              [merged_options_hash, merged_tags_hash]
             end
 
             def get_array_of_builds(dialogs_options_hash)
@@ -130,7 +129,7 @@ module RhcMiqQuickstart
 
             # determine who the requesting user is
             def get_requester(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_requester...", true)
+              log(:info, 'Processing get_requester...', true)
               @user = @handle.vmdb('user').find_by_id(merged_options_hash[:user_id]) ||
                 @handle.root['user']
               merged_options_hash[:user_name] = @user.userid
@@ -138,14 +137,14 @@ module RhcMiqQuickstart
               merged_options_hash[:owner_last_name] = @user.last_name ? @user.last_name : 'Admin'
               merged_options_hash[:owner_email] = @user.email ? @user.email : @handle.object['to_email_address']
               log(:info, "Build: #{build} - User: #{merged_options_hash[:user_name]} " \
-        "email: #{merged_options_hash[:owner_email]}")
+                "email: #{merged_options_hash[:owner_email]}")
               # Stuff the current group information
               merged_options_hash[:group_id] = @user.current_group.id
               merged_options_hash[:group_name] = @user.current_group.description
               log(:info, "Build: #{build} - Group: #{merged_options_hash[:group_name]} " \
-        "id: #{merged_options_hash[:group_id]}")
+                "id: #{merged_options_hash[:group_id]}")
 
-              log(:info, "Processing get_requester...Complete", true)
+              log(:info, 'Processing get_requester...Complete', true)
             end
 
             # Search for a template with the priority of
@@ -204,7 +203,7 @@ module RhcMiqQuickstart
             end
 
             def get_provision_type(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_provision_type...", true)
+              log(:info, 'Processing get_provision_type...', true)
               case @template.vendor.downcase
               when 'vmware'
                 # Valid types for vmware:  vmware, pxe, netapp_rcu
@@ -220,21 +219,21 @@ module RhcMiqQuickstart
               if merged_options_hash[:provision_type]
                 log(:info, "Build: #{build} - provision_type: #{merged_options_hash[:provision_type]}")
               end
-              log(:info, "Processing get_provision_type...Complete", true)
+              log(:info, 'Processing get_provision_type...Complete', true)
             end
 
             def get_vm_name(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_vm_name", true)
+              log(:info, 'Procesprovision_typesing get_vm_name', true)
               new_vm_name = merged_options_hash[:vm_name] || merged_options_hash[:vm_target_name] || 'changeme'
               proposed_vm_name = nil
               if new_vm_name.include?('*')
-                log(:info, "Processing VM name prepended by *")
+                log(:info, 'Processing VM name prepended by *')
                 raise 'vm_name cannot contain a * when provisioning multiple VMs' if merged_options_hash[:number_of_vms] > 1
                 raise "vm_name #{new_vm_name} already exists." if @handle.vmdb(:vm_or_template).find_by_name(new_vm_name.gsub('*', ''))
                 proposed_vm_name = new_vm_name
               else
                 # Loop through 00-99 and look to see if the vm_name already exists in the vmdb to avoid collisions
-                for i in (1..100)
+                (1..100).each do |i|
                   raise "All VM names used for #{new_vm_name} 00-99" if i == 100
                   proposed_vm_name = "#{new_vm_name}#{i.to_s.rjust(2, "0")}"
                   log(:info, "Checking for existence of vm: #{proposed_vm_name}")
@@ -247,11 +246,11 @@ module RhcMiqQuickstart
               merged_options_hash[:vm_name] = proposed_vm_name
               merged_options_hash[:linux_host_name] = proposed_vm_name
               log(:info, "Build: #{build} - VM Name: #{merged_options_hash[:vm_name]}")
-              log(:info, "Processing get_vm_name...Complete", true)
+              log(:info, 'Processing get_vm_name...Complete', true)
             end
 
             def get_network(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_network...", true)
+              log(:info, 'Processing get_network...', true)
               case @template.vendor.downcase
               when 'vmware'
                 if merged_options_hash[:vlan].blank?
@@ -261,7 +260,7 @@ module RhcMiqQuickstart
               when 'redhat'
                 if merged_options_hash[:vlan].blank?
                   # Set a default vlan here
-                  merged_options_hash[:vlan] = 'ovirtmgmt'
+                  merged_options_hash[:vlan] = '<Template>'
                 end
               when 'microsoft'
                 if merged_options_hash[:vlan].blank? && merged_tags_hash[:ipam_path]
@@ -269,30 +268,36 @@ module RhcMiqQuickstart
                 end
               end
               log(:info, "Build: #{build} - vlan: #{merged_options_hash[:vlan]}")
-              log(:info, "Processing get_network...Complete", true)
+              log(:info, 'Processing get_network...Complete', true)
             end
 
             def get_flavor(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_flavor...", true)
+              log(:info, 'Processing get_flavor...', true)
 
               flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
               log(:info, flavors) if @DEBUG
 
-              flavor = flavors.find{|f| f[:flavor_name] == merged_options_hash[:flavor]}
+              flavor = flavors.find { |f| f[:flavor_name] == merged_options_hash[:flavor] }
               error("Unable to locate flavor: [#{merged_options_hash[:flavor]}]") unless flavor
 
-              %i[number_of_sockets cores_per_socket vm_memory].each do |sym|
+              [:number_of_sockets, :cores_per_socket, :vm_memory].each do |sym|
                 merged_options_hash[sym] = flavor[sym]
               end
 
+              if @template.vendor.casecmp('redhat')
+                reserve = merged_options_hash[:vm_memory]
+                log(:info, "Force setting memory_reserve for a RHV provision to same as 'vm_memory', [#{reserve}]")
+                merged_options_hash[:memory_reserve] = reserve
+              end
+
               # TODO: reimplement cloud flavor mapping
-              log(:info, "Processing get_flavor...Complete", true)
+              log(:info, 'Processing get_flavor...Complete', true)
             end
 
             def get_retirement(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_retirement...", true)
+              log(:info, 'Processing get_retirement...', true)
 
-              no_retirement_groups = %w[CES-Admin EvmGroup-super_administrator]
+              no_retirement_groups = %w[EvmGroup-super_administrator]
               user_group = @user.current_group.description
               if no_retirement_groups.include?(user_group) # Set a default retirement here
                 # note here that CloudForms has a single retirement warning date. Magic happens
@@ -303,17 +308,17 @@ module RhcMiqQuickstart
               end
               log(:info, "Build: #{build} - retirement: #{merged_options_hash[:retirement]}" \
       " retirement_warn: #{merged_options_hash[:retirement_warn]}")
-              log(:info, "Processing get_retirement...Complete", true)
+              log(:info, 'Processing get_retirement...Complete', true)
             end
 
             def get_extra_options(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing get_extra_options...", true)
+              log(:info, 'Processing get_extra_options...', true)
               # stuff the service guid & id so that the VMs can be added to the service later (see AddVMToService)
               merged_options_hash[:service_id] = @service.id unless @service.nil?
               merged_options_hash[:service_guid] = @service.guid unless @service.nil?
               log(:info, "Build: #{build} - service_id: #{merged_options_hash[:service_id]} " \
         "service_guid: #{merged_options_hash[:service_guid]}")
-              log(:info, "Processing get_extra_options...Complete", true)
+              log(:info, 'Processing get_extra_options...Complete', true)
             end
 
             def process_builds(dialog_options_hash, dialog_tags_hash)
@@ -379,7 +384,7 @@ module RhcMiqQuickstart
               valid_templateFields = [:name, :request_type, :guid, :cluster]
 
               valid_vmFields = [:vm_name, :number_of_vms, :vm_description, :vm_prefix]
-              valid_vmFields += [:number_of_sockets, :cores_per_socket, :vm_memory, :mac_address]
+              valid_vmFields += [:number_of_sockets, :cores_per_socket, :vm_memory, :memory_reserve, :mac_address]
               valid_vmFields += [:root_password, :provision_type, :linux_host_name, :vlan, :customization_template_id]
               valid_vmFields += [:retirement, :retirement_warn, :placement_auto, :vm_auto_start]
               valid_vmFields += [:linked_clone, :network_adapters, :placement_cluster_name, :request_notes]
@@ -387,11 +392,11 @@ module RhcMiqQuickstart
               valid_vmFields += [:security_groups, :cloud_tenant, :cloud_network, :cloud_subnet, :instance_type]
 
               valid_requester_args = [:user_name, :owner_first_name, :owner_last_name, :owner_email, :auto_approve]
-              return valid_templateFields, valid_vmFields, valid_requester_args
+              [ valid_templateFields, valid_vmFields, valid_requester_args ]
             end
 
             def build_provision_request(build, merged_options_hash, merged_tags_hash)
-              log(:info, "Processing build_provision_request...", true)
+              log(:info, 'Processing build_provision_request...', true)
               valid_templateFields, valid_vmFields, valid_requester_args = set_valid_provisioning_args
 
               # arg1 = version
@@ -436,9 +441,9 @@ module RhcMiqQuickstart
               request = @handle.execute('create_provision_request', *args)
 
               # Reset the global variables for the next build
-              @template, @user, = nil, nil
-              log(:info, "Processing build_provision_request...Complete", true)
-              return request
+              @template = @user = nil
+              log(:info, 'Processing build_provision_request...Complete', true)
+              request
             end
 
             def main
@@ -460,33 +465,8 @@ module RhcMiqQuickstart
               @task.finished("#{err}") if @task
               @service.remove_from_vmdb if @service
               exit MIQ_ABORT
-            end #main
-
-            # TODO: Move this from here (and list_template_guids.rb) to StdLib
-
-            private
-
-            def get_current_group_rbac_array
-              rbac_array = []
-              unless @user.current_group.filters.blank?
-                @user.current_group.filters['managed'].flatten.each do |filter|
-                  next unless /(?<category>\w*)\/(?<tag>\w*)$/i =~ filter
-                  rbac_array << {category=>tag}
-                end
-              end
-              log(:info, "@user: #{@user.userid} RBAC filters: #{rbac_array}")
-              rbac_array
             end
 
-            def object_eligible?(obj)
-              return false if obj.archived || obj.orphaned
-              @rbac_array.each do |rbac_hash|
-                rbac_hash.each do |rbac_category, rbac_tags|
-                  Array.wrap(rbac_tags).each {|rbac_tag_entry| return false unless obj.tagged_with?(rbac_category, rbac_tag_entry) }
-                end
-                true
-              end
-            end
           end #class
         end
       end
