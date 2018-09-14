@@ -1,13 +1,11 @@
-#  list_template_guids.rb
+#  list_flavors.rb
 #
-#  Author: Kevin Morey <kevin@redhat.com>
-#          Jeff Warnica <jwarnica@redhat.com>
+#  Author: Jeff Warnica <jwarnica@redhat.com>
 #
-#  Description: This method builds a dialog of all tempalate guids based
-#     on the RBAC filters applied to a users group.
+#  Description: Method to build a drop down of the flavors configured in
 #
 # ------------------------------------------------------------------------------
-#    Copyright 2016 Kevin Morey <kevin@redhat.com>
+#    Copyright 2018 Jeff Warnica <jwarnica@redhat.com>
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -26,7 +24,7 @@ module RhcMiqQuickstart
   module Automate
     module Service
       module DynamicDialogs
-        class ListTemplateGuilds
+        class ListFlavors
 
           include RedHatConsulting_Utilities::StdLib::Core
 
@@ -37,23 +35,23 @@ module RhcMiqQuickstart
 
           def main()
 
-            @user = get_user
-            @rbac_array = get_current_group_rbac_array
+            flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
+
+            log(:info, flavors)
 
             dialog_hash = {}
-            @handle.vmdb(:miq_template).all.each do |template|
-              if object_eligible?(template)
-                dialog_hash[template[:guid]] = "#{template.name} on #{template.ext_management_system.name}"
-              end
+            flavors.each do |flavor|
+              cpu = flavor[:number_of_sockets] * flavor[:cores_per_socket]
+              dialog_hash[flavor[:flavor_name]] = "#{flavor[:flavor_name]} - #{cpu} vCPUs, #{flavor[:vm_memory]} MB RAM"
             end
 
             if dialog_hash.blank?
-              dialog_hash[''] = "< No templates found tagged with #{rbac_array} >"
+              dialog_hash[''] = "< No flavors configured >"
             else
               @handle.object['default_value'] = dialog_hash.first[0]
             end
 
-            @handle.object["values"] = dialog_hash
+            @handle.object['values'] = dialog_hash
             log(:info, "@handle.object['values']: #{@handle.object['values'].inspect}")
 
           rescue => err
@@ -67,6 +65,6 @@ module RhcMiqQuickstart
 end
 
 if __FILE__ == $PROGRAM_NAME
-  RhcMiqQuickstart::Automate::Service::DynamicDialogs::ListTemplateGuilds.new.main()
+  RhcMiqQuickstart::Automate::Service::DynamicDialogs::ListFlavors.new.main()
 end
 

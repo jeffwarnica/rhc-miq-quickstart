@@ -3,13 +3,11 @@ object_type: method
 version: 1.0
 object:
   attributes:
-    name: list_template_guids
-    display_name: 
-    description: 
+    name: flavorconfig
+    display_name:
+    description:
     scope: instance
     language: ruby
     location: inline
-    embedded_methods:
-    - "/StdLib/Core/Core"
     options: {}
   inputs: []

@@ -1,1 +1,4 @@
 .idea/*
+
+#cached shared rubocop rules
+.rubocop-http*

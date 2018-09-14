@@ -21,11 +21,16 @@ Tracking current CF releases is more important than backwards compatibility.
 
 Maintaining functionality is more important than chasing shiny.
 
-Longer, more complex, but configurable methods are favoured over multiple drop in replacement implementations.
+Longer, more complex, but configurable methods are favoured over multiple drop
+in replacement implementations.
 
 
 # Development Process
 
+The inspiration and design for this is the CF 4.2 targeted version of CloudForms
+Essentials, and to get to 1.0, it is anticipated that much code from that will
+simply be copied from that project, refactored to the class structure of code,
+and with advanced and complex features dropped.
 
 To not directly require the now old (4.2) versions of CF_E which I consider
 useful. This implies I'm allowing myself to straight copy some of those files.

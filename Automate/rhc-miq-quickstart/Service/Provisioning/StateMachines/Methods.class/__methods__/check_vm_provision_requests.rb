@@ -13,6 +13,7 @@ module RhcMiqQuickstart
     module Service
       module Provisioning
         module StateMachines
+          #:nodoc:
           class CheckVmProvisionRequests
             include RedHatConsulting_Utilities::StdLib::Core
 
@@ -48,8 +49,8 @@ module RhcMiqQuickstart
                   waiting_on << vm_request_id
                 end
               end
-              
-              log(:info, "XXXXXXXX waiting_on now: [#{waiting_on.join(',')}]")
+
+              log(:info, "\twaiting_on now: [#{waiting_on.join(',')}]")
 
               unless waiting_on.empty?
                 interval = '60.seconds'
