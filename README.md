@@ -6,7 +6,7 @@ a useful CloudForms (ManageIQ) setup.
 # Requirements
 This has been "tested" against CloudForms 4.6.
 
-This requires at least the Automate part of
+This requires at least the automate part of
 https://github.com/RedHatOfficial/miq-Utilities
 
 # Design goals
