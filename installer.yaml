@@ -8,7 +8,7 @@
   vars:
     dest_dir: /root/
     github_user: jeffwarnica
-    github_project: rhc-miq-quickstart
+    github_project: rhc_miq_quickstart
     cfme_base_dir: "{{ dest_dir }}rhc-miq-quickstart"
     rht_base_dir: "{{ dest_dir }}cfme-rhconsulting-scripts"
     offline: false
@@ -39,7 +39,7 @@
 
   - name: Clone CloudForms_Essentials
     git:
-      repo: "https://github.com/{{ github_user }}/{{ rhc-miq-quickstart }}.git"
+      repo: "https://github.com/{{ github_user }}/{{ rhc_miq_quickstart }}.git"
       dest: "{{ cfme_base_dir }}"
     when: not offline
 
