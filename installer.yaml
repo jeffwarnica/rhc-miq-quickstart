@@ -9,7 +9,7 @@
     dest_dir: /root/
     github_user: jeffwarnica
     github_project: rhc-miq-quickstart
-    cfme_base_dir: "{{ dest_dir }}rhc-miq-quickstart"
+    cfme_base_dir: "{{ dest_dir }}{{ github_project }}"
     rht_base_dir: "{{ dest_dir }}cfme-rhconsulting-scripts"
     offline: false
     offline_rht_zip_file: "{{ dest_dir }}cfme-rhconsulting-scripts-master.zip"
