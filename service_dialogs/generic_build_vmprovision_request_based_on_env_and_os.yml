@@ -1,0 +1,329 @@
+---
+- description:
+  buttons: submit,cancel
+  label: RHC_generic_build_vmprovision_request_based_on_env_and_os
+  dialog_tabs:
+  - description:
+    display: edit
+    label: Build a VM
+    display_method:
+    display_method_options:
+    position: 0
+    dialog_groups:
+    - description:
+      display: edit
+      label: Service Information
+      display_method:
+      display_method_options:
+      position: 0
+      dialog_fields:
+      - name: service_name
+        description:
+        data_type:
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: false
+        required_method:
+        required_method_options: {}
+        default_value: ''
+        values:
+        values_method:
+        values_method_options: {}
+        options:
+          :protected: false
+        label: Service Name
+        position: 0
+        validator_type:
+        validator_rule:
+        reconfigurable:
+        dynamic:
+        show_refresh_button:
+        load_values_on_init:
+        read_only:
+        auto_refresh:
+        trigger_auto_refresh:
+        visible: true
+        type: DialogFieldTextBox
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace:
+          ae_class:
+          ae_instance:
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []
+      - name: tag_0_environment
+        description:
+        data_type: string
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: true
+        required_method:
+        required_method_options: {}
+        default_value: qa
+        values:
+        - - dev
+          - Development
+        - - prod
+          - Production
+        - - qa
+          - QA
+        - - test
+          - Test
+        values_method:
+        values_method_options: {}
+        options:
+          :sort_by: description
+          :sort_order: ascending
+        label: Environment *
+        position: 1
+        validator_type:
+        validator_rule:
+        reconfigurable:
+        dynamic: false
+        show_refresh_button:
+        load_values_on_init:
+        read_only: false
+        auto_refresh:
+        trigger_auto_refresh:
+        visible: true
+        type: DialogFieldRadioButton
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace:
+          ae_class:
+          ae_instance:
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []
+    - description: ''
+      display: edit
+      label: VM Information
+      display_method:
+      display_method_options:
+      position: 1
+      dialog_fields:
+      - name: option_1_os
+        description:
+        data_type: string
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: true
+        required_method:
+        required_method_options: {}
+        default_value: linux
+        values:
+        - - linux
+          - Linux
+        - - windows
+          - Windows
+        values_method:
+        values_method_options: {}
+        options:
+          :sort_by: description
+          :sort_order: ascending
+        label: OS *
+        position: 0
+        validator_type:
+        validator_rule:
+        reconfigurable:
+        dynamic: false
+        show_refresh_button:
+        load_values_on_init:
+        read_only: false
+        auto_refresh:
+        trigger_auto_refresh: false
+        visible: true
+        type: DialogFieldDropDownList
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace:
+          ae_class:
+          ae_instance:
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []
+      - name: option_1_vm_name
+        description:
+        data_type:
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: false
+        required_method:
+        required_method_options: {}
+        default_value: ''
+        values:
+        values_method:
+        values_method_options: {}
+        options:
+          :protected: false
+        label: VM Name
+        position: 1
+        validator_type: regex
+        validator_rule: "^[a-zA-Z0-9-]{0,12}$"
+        reconfigurable:
+        dynamic:
+        show_refresh_button:
+        load_values_on_init:
+        read_only:
+        auto_refresh:
+        trigger_auto_refresh:
+        visible: true
+        type: DialogFieldTextBox
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace:
+          ae_class:
+          ae_instance:
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []
+      - name: option_1_flavor
+        description:
+        data_type: string
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: true
+        required_method:
+        required_method_options: {}
+        default_value: 01_small
+        values_method:
+        values_method_options: {}
+        options:
+          :sort_by: value
+          :sort_order: ascending
+          :force_multi_value: false
+        label: Flavor *
+        position: 2
+        validator_type:
+        validator_rule:
+        reconfigurable: false
+        dynamic: true
+        show_refresh_button: false
+        load_values_on_init:
+        read_only: false
+        auto_refresh:
+        trigger_auto_refresh:
+        visible: true
+        type: DialogFieldDropDownList
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace: Service
+          ae_class: DynamicDialogs
+          ae_instance: list_flavors
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []
+        values:
+      - name: option_1_volume_1_size
+        description:
+        data_type: string
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: false
+        required_method:
+        required_method_options: {}
+        default_value: '0'
+        values:
+        - -
+          - "<None>"
+        - - '10'
+          - 10 GB
+        - - '20'
+          - 20 GB
+        - - '0'
+          - "<Default>"
+        values_method:
+        values_method_options: {}
+        options:
+          :sort_by: none
+          :sort_order: ascending
+        label: Additional Disk
+        position: 3
+        validator_type:
+        validator_rule:
+        reconfigurable:
+        dynamic:
+        show_refresh_button:
+        load_values_on_init:
+        read_only:
+        auto_refresh:
+        trigger_auto_refresh:
+        visible: true
+        type: DialogFieldDropDownList
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace:
+          ae_class:
+          ae_instance:
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []
+      - name: option_1_number_of_vms
+        description:
+        data_type: string
+        notes:
+        notes_display:
+        display: edit
+        display_method:
+        display_method_options: {}
+        required: true
+        required_method:
+        required_method_options: {}
+        default_value: '1'
+        values:
+        - - '1'
+          - '1'
+        - - '2'
+          - '2'
+        values_method:
+        values_method_options: {}
+        options:
+          :sort_by: description
+          :sort_order: ascending
+        label: Number of VMs
+        position: 4
+        validator_type:
+        validator_rule:
+        reconfigurable:
+        dynamic:
+        show_refresh_button:
+        load_values_on_init:
+        read_only:
+        auto_refresh:
+        trigger_auto_refresh:
+        visible: true
+        type: DialogFieldDropDownList
+        resource_action:
+          action:
+          resource_type: DialogField
+          ae_namespace:
+          ae_class:
+          ae_instance:
+          ae_message:
+          ae_attributes: {}
+        dialog_field_responders: []

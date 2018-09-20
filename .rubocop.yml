@@ -1,2 +1,3 @@
 inherit_from:
-  - https://raw.githubusercontent.com/RedHatOfficial/miq-Utilities/master/.rubocop.yml
+  #- https://raw.githubusercontent.com/RedHatOfficial/miq-Utilities/master/.rubocop.yml
+  - https://raw.githubusercontent.com/ManageIQ/guides/master/.rubocop_base.yml

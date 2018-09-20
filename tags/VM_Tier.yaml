@@ -1,0 +1,64 @@
+--
+- description: VM Tier
+  icon: 
+  read_only: false
+  syntax: string
+  single_value: true
+  example_text: VM Tier
+  parent_id: 0
+  show: true
+  default: 
+  perf_by_tag: false
+  name: tier
+  entries:
+  - description: Web
+    icon: 
+    read_only: false
+    syntax: string
+    single_value: false
+    example_text: 
+    show: true
+    default: 
+    perf_by_tag: 
+    name: web
+  - description: Database
+    icon: 
+    read_only: false
+    syntax: string
+    single_value: false
+    example_text: 
+    show: true
+    default: 
+    perf_by_tag: 
+    name: db
+  - description: Application
+    icon: 
+    read_only: false
+    syntax: string
+    single_value: false
+    example_text: 
+    show: true
+    default: 
+    perf_by_tag: 
+    name: app
+  - description: Auxiliary
+    icon: 
+    read_only: false
+    syntax: string
+    single_value: false
+    example_text: 
+    show: true
+    default: 
+    perf_by_tag: 
+    name: aux
+  - description: Load Balancer
+    icon: 
+    read_only: false
+    syntax: string
+    single_value: false
+    example_text: 
+    show: true
+    default: 
+    perf_by_tag: 
+    name: lb
+
