@@ -12,5 +12,6 @@ object:
     embedded_methods:
     - "/StdLib/Core/Core"
     - "/Common/FlavorConfig/flavorconfig"
+    - "/StdLib/Settings/Settings"
     options: {}
   inputs: []

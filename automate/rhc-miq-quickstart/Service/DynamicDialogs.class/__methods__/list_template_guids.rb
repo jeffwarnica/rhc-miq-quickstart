@@ -29,6 +29,7 @@ module RhcMiqQuickstart
         class ListTemplateGuilds
 
           include RedHatConsulting_Utilities::StdLib::Core
+          DISPLAY_ON = 'cluster'.freeze # 'cluster' or 'provider'
 
           def initialize(handle = $evm)
             @handle = handle
@@ -43,12 +44,14 @@ module RhcMiqQuickstart
             dialog_hash = {}
             @handle.vmdb(:miq_template).all.each do |template|
               if object_eligible?(template)
-                dialog_hash[template[:guid]] = "#{template.name} on #{template.ext_management_system.name}"
+                on = ' on ' + template.host.ems_cluster.name if DISPLAY_ON == 'cluster'
+                on = ' on ' + template.ext_management_system.name if DISPLAY_ON == 'provider'
+                dialog_hash[template[:guid]] = "#{template.name}#{on}"
               end
             end
 
             if dialog_hash.blank?
-              dialog_hash[''] = "< No templates found tagged with #{rbac_array} >"
+              dialog_hash[''] = "< No templates found tagged with #{@rbac_array} >"
             else
               @handle.object['default_value'] = dialog_hash.first[0]
             end

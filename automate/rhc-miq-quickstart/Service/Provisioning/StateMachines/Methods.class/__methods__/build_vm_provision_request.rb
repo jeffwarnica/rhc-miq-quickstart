@@ -35,6 +35,8 @@ module RhcMiqQuickstart
 
               @task = get_stp_task
               @service = @task.destination
+              @region = @service.region_number
+              @settings = RedHatConsulting_Utilities::StdLib::Core::Settings.new()
 
             end
 
@@ -62,6 +64,21 @@ module RhcMiqQuickstart
               create_tags(tag_category, tag_value, true)
             end
 
+            # service_tagging - tag the service with tags in tags_hash
+            def tag_service(tags_hash)
+              log(:info, "Processing tag_service...", true)
+              tags_hash.each do |key, value|
+                log(:info, "Processing tag: #{key.inspect} value: #{value.inspect}")
+                tag_category = key.downcase
+                Array.wrap(value).each do |tag_entry|
+                  process_tag(tag_category, tag_entry.downcase)
+                  log(:info, "Assigning Tag: {#{tag_category}=>#{tag_entry}} to Service: #{@service.name}")
+                  @service.tag_assign("#{tag_category}/#{tag_entry}")
+                end
+                log(:info, "Processing tag_service...Complete", true)
+              end
+            end
+
             # fix_dialog_tags_hash to allow for support of Tag Control items in dialogs.  Previously, the Tag Control would
             # push values in as an array, which is not supported.  The fix_dialog_tag_hash parsed the dialog_tags_hash and changes
             # all array values to strings.
@@ -80,7 +97,7 @@ module RhcMiqQuickstart
             end
 
             def yaml_data(option)
-              @task.get_option(option).nil? ? nil : YAML.safe_load(@task.get_option(option))
+              @task.get_option(option).nil? ? nil : YAML.load(@task.get_option(option))
             end
 
             # check to ensure that dialog_parser has ran
@@ -127,22 +144,30 @@ module RhcMiqQuickstart
               builds.sort
             end
 
+            ##
             # determine who the requesting user is
+            #
+            # if the dialog has a user_id filed populated, we will do a lookup
+            # (against both the totally useless CF interger ID and userid),
+            # and if that is a valid CF user, we will order the VMs for that user
+            #
+            #
             def get_requester(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_requester...', true)
               @user = @handle.vmdb('user').find_by_id(merged_options_hash[:user_id]) ||
+                @handle.vmdb('user').find_by_userid(merged_options_hash[:user_id]) ||
                 @handle.root['user']
               merged_options_hash[:user_name] = @user.userid
               merged_options_hash[:owner_first_name] = @user.first_name ? @user.first_name : 'Cloud'
               merged_options_hash[:owner_last_name] = @user.last_name ? @user.last_name : 'Admin'
               merged_options_hash[:owner_email] = @user.email ? @user.email : @handle.object['to_email_address']
               log(:info, "Build: #{build} - User: #{merged_options_hash[:user_name]} " \
-                "email: #{merged_options_hash[:owner_email]}")
+                  "email: #{merged_options_hash[:owner_email]}")
               # Stuff the current group information
               merged_options_hash[:group_id] = @user.current_group.id
               merged_options_hash[:group_name] = @user.current_group.description
               log(:info, "Build: #{build} - Group: #{merged_options_hash[:group_name]} " \
-                "id: #{merged_options_hash[:group_id]}")
+                  "id: #{merged_options_hash[:group_id]}")
 
               log(:info, 'Processing get_requester...Complete', true)
             end
@@ -158,12 +183,13 @@ module RhcMiqQuickstart
               template_search_by_guid = merged_options_hash[:guid]
               # template_search_by_name = merged_options_hash[:template] || merged_options_hash[:name]
               # template_search_by_product = merged_options_hash[:product]
-              template_search_by_os = merged_options_hash[:os]
+              template_search_by_os = merged_options_hash[:os] || merged_tags_hash[:os]
 
               templates = []
               templates = get_templates_by_guid(template_search_by_guid) if template_search_by_guid
-
               templates = get_templates_by_os(template_search_by_os) if template_search_by_os && templates.blank?
+
+              log(:info, "here. template size: [#{templates.size}]")
 
               # TODO: Implement "best" template logic here
 
@@ -171,7 +197,7 @@ module RhcMiqQuickstart
               @template = templates.first
 
               log(:info, "Build: #{build} - template: #{@template.name} guid: #{@template.guid} " \
-                "on provider: #{@template.ext_management_system.name}")
+                  "on provider: #{@template.ext_management_system.name}")
               merged_options_hash[:name] = @template.name
               merged_options_hash[:guid] = @template.guid
               log(:info, 'Processing get_template...Complete', true)
@@ -179,7 +205,7 @@ module RhcMiqQuickstart
 
             def get_templates_by_guid(guid)
               log(:info, "Searching for templates tagged with #{@rbac_array} that " \
-                "match guid: #{guid}")
+                  "match guid: #{guid}")
               templates = @handle.vmdb(:miq_template).all.select do |t|
                 object_eligible?(t) && t.ext_management_system && t.guid == guid
               end
@@ -192,7 +218,7 @@ module RhcMiqQuickstart
             def get_templates_by_os(os)
               os_category = 'os'
               log(:info, "Searching for templates tagged with #{@rbac_array} that " \
-                "{#{os_category.to_sym}=>#{os}}")
+                  "{#{os_category.to_sym}=>#{os}}")
               templates = @handle.vmdb(:miq_template).all.select do |t|
                 object_eligible?(t) && t.ext_management_system && t.tagged_with?(os_category, os)
               end
@@ -249,18 +275,38 @@ module RhcMiqQuickstart
               log(:info, 'Processing get_vm_name...Complete', true)
             end
 
+            ##
+            # Sets a sane network for the VM request
+            #
+            # Looks up a vlan (or DVS, or whatever) name from settings.rb
+            # from the key 'network_[providerType][_[tag]]', for 0..n tags, based on :network_lookup_keys
+            #
+            # NOTE: microsoft is special, and I don't know why.
+            #
             def get_network(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_network...', true)
+
               case @template.vendor.downcase
-              when 'vmware'
+              when 'vmware', 'redhat'
                 if merged_options_hash[:vlan].blank?
+
+                  #first build our lookup key
+
+                  lookup_extra_keys = @settings.get_setting(:global, :network_lookup_keys)
+                  lookup_key = "network_#{@template.vendor.downcase}"
+                  lookup_extra_keys.each { |k|
+                    tag_val = merged_tags_hash[k.to_sym]
+                    log(:info, "adding key from [#{k}] which is [#{tag_val}]")
+                    lookup_key += "_#{tag_val}"
+                  }
+                  lookup_key = lookup_key.to_sym
+
+                  log(:info, "Searching for vlan name with key [#{lookup_key}]")
+
                   # Set a default vlan here
-                  merged_options_hash[:vlan] = 'VM Network'
-                end
-              when 'redhat'
-                if merged_options_hash[:vlan].blank?
-                  # Set a default vlan here
-                  merged_options_hash[:vlan] = '<Template>'
+                  vlan = @settings.get_setting(@region, lookup_key)
+                  log(:info, "\tsetting vlan to: [#{vlan}]")
+                  merged_options_hash[:vlan] = vlan
                 end
               when 'microsoft'
                 if merged_options_hash[:vlan].blank? && merged_tags_hash[:ipam_path]
@@ -284,7 +330,7 @@ module RhcMiqQuickstart
                 merged_options_hash[sym] = flavor[sym]
               end
 
-              if @template.vendor.casecmp('redhat')
+              if @template.vendor.downcase == 'redhat'
                 reserve = merged_options_hash[:vm_memory]
                 log(:info, "Force setting memory_reserve for a RHV provision to same as 'vm_memory', [#{reserve}]")
                 merged_options_hash[:memory_reserve] = reserve
@@ -304,11 +350,34 @@ module RhcMiqQuickstart
                 # in the retirement warning email method to reset it and thus send multiple warnings
                 log(:info, "\tRequesting user is in group [#{user_group}]. Not setting retirement values")
               else
-                merged_options_hash[:retirement], merged_options_hash[:retirement_warn] = 30.days.to_i, 14.days.to_i
+                merged_options_hash[:retirement] = @settings.get_setting(@region, :retirement)
+                merged_options_hash[:retirement_warn] = @settings.get_setting(@region, :retirement_warn)
               end
               log(:info, "Build: #{build} - retirement: #{merged_options_hash[:retirement]}" \
-      " retirement_warn: #{merged_options_hash[:retirement_warn]}")
+        " retirement_warn: #{merged_options_hash[:retirement_warn]}")
               log(:info, 'Processing get_retirement...Complete', true)
+            end
+
+            ##
+            # Tag the service with the tags of the Service Catalog itself, and also whatever
+            # the dialog has in merged_tags_hash
+            #
+            # This ensures that RBAC visibility tags like prov_scope will tag on the generated
+            # service & VMs
+            #
+            def copy_tags(build, merged_options_hash, merged_tags_hash)
+              # tag service with all rbac filter tags (for roles with vm access restrictions set to none)
+              @rbac_array.each { |rbac_hash| tag_service(rbac_hash) }
+
+              # add all rbac filter tags to merged_tags_hash (again ensure that the miq_provision has all of our tags)
+              @rbac_array.each do |rbac_hash|
+                rbac_hash.each do |rbac_category, rbac_tag|
+                  Array.wrap(rbac_tag).each do |rbac_tag_entry|
+                    log(:info, "Assigning Tag: {#{rbac_category}=>#{rbac_tag_entry}} to build: #{build}")
+                    merged_tags_hash[rbac_category.to_sym] = rbac_tag_entry
+                  end
+                end
+              end
             end
 
             def get_extra_options(build, merged_options_hash, merged_tags_hash)
@@ -317,7 +386,7 @@ module RhcMiqQuickstart
               merged_options_hash[:service_id] = @service.id unless @service.nil?
               merged_options_hash[:service_guid] = @service.guid unless @service.nil?
               log(:info, "Build: #{build} - service_id: #{merged_options_hash[:service_id]} " \
-        "service_guid: #{merged_options_hash[:service_guid]}")
+          "service_guid: #{merged_options_hash[:service_guid]}")
               log(:info, 'Processing get_extra_options...Complete', true)
             end
 
@@ -355,6 +424,8 @@ module RhcMiqQuickstart
                 # get extra options ( use this section to override any options/tags that you want)
                 get_extra_options(build, merged_options_hash, merged_tags_hash)
 
+                copy_tags(build, merged_options_hash, merged_tags_hash)
+
                 # create all specified categories/tags again just to be sure we got them all
                 merged_tags_hash.each do |key, value|
                   log(:info, "Processing tag: #{key.inspect} value: #{value.inspect}")
@@ -372,7 +443,7 @@ module RhcMiqQuickstart
                 # the payload to miq_request and miq_provision
                 request = build_provision_request(build, merged_options_hash, merged_tags_hash)
                 log(:info, "Build: #{build} - VM Provision request #{request.id} for " \
-          "#{merged_options_hash[:vm_name]} successfully submitted", true)
+            "#{merged_options_hash[:vm_name]} successfully submitted", true)
                 vm_prov_request_ids << request.id
               end
               log(:info, "Setting state var :vm_prov_request_ids to #{vm_prov_request_ids.inspect}")
@@ -392,7 +463,7 @@ module RhcMiqQuickstart
               valid_vmFields += [:security_groups, :cloud_tenant, :cloud_network, :cloud_subnet, :instance_type]
 
               valid_requester_args = [:user_name, :owner_first_name, :owner_last_name, :owner_email, :auto_approve]
-              [ valid_templateFields, valid_vmFields, valid_requester_args ]
+              [valid_templateFields, valid_vmFields, valid_requester_args]
             end
 
             def build_provision_request(build, merged_options_hash, merged_tags_hash)
@@ -455,6 +526,8 @@ module RhcMiqQuickstart
               log(:info, "Service: #{@service.name} id: #{@service.id} tasks: #{@task.miq_request_tasks.count}")
 
               dialog_options_hash, dialog_tags_hash = parsed_dialog_information
+
+              tag_service(dialog_tags_hash.fetch(0, {}))
 
               # prepare the builds and execute them
               process_builds(dialog_options_hash, dialog_tags_hash)
