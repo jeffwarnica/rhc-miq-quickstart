@@ -1,7 +1,7 @@
 ---
 - description:
   buttons: submit,cancel
-  label: generic_build_vmprovision_request_based_on_choosing_a_template_3_tier
+  label: RHC_generic_build_vmprovision_request_based_on_choosing_a_template_3_tier
   dialog_tabs:
   - description:
     display: edit
