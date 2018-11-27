@@ -31,18 +31,45 @@ module RhcMiqQuickstart
           def initialize(handle = $evm)
             @handle = handle
             @DEBUG = false
+            @tier = @handle.root['tier']
+            template_guid = @handle.root["dialog_option_#{@tier}_guid"]
+            @template = @handle.vmdb(:vm_or_template).find_by_guid(template_guid)
+            @template_os = @template.tags('os').first
           end
 
           def main()
-
+            log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
             flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
+  $evm.log(:info, " $evm.instance_variable_get(:@persist_state_hash).inspect: [#{ $evm.instance_variable_get(:@persist_state_hash).inspect}]")
 
             log(:info, flavors)
 
             dialog_hash = {}
             flavors.each do |flavor|
               cpu = flavor[:number_of_sockets] * flavor[:cores_per_socket]
-              dialog_hash[flavor[:flavor_name]] = "#{flavor[:flavor_name]} - #{cpu} vCPUs, #{flavor[:vm_memory]} MB RAM"
+              disks = ''
+              total = 0
+
+              if flavor.has_key?(:disks)
+                flavor[:disks].each do |d|
+                  d.each do |k,v|
+                    if k.match(/disk_\d+_size/)
+                      total += v
+                    end
+                  end
+                end
+                disks = ", #{total}GB disk"
+              elsif flavor.has_key?(("disks_" + @template_os).to_sym)
+                flavor[("disks_" + @template_os).to_sym].each do |d|
+                  d.each do |k,v|
+                    if k.match(/disk_\d+_size/)
+                      total += v
+                    end
+                  end
+                end
+                disks = ", #{total}GB disk"
+              end
+              dialog_hash[flavor[:flavor_name]] = "#{flavor[:flavor_name]} - #{cpu} vCPUs, #{flavor[:vm_memory]} MB RAM#{disks}"
             end
 
             if dialog_hash.blank?
@@ -54,9 +81,7 @@ module RhcMiqQuickstart
             @handle.object['values'] = dialog_hash
             log(:info, "@handle.object['values']: #{@handle.object['values'].inspect}")
 
-          rescue => err
-            log(:error, "[(#{err.class})#{err}]\n#{err.backtrace.join("\n")}")
-            exit MIQ_ABORT
+            log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
           end
         end
       end
