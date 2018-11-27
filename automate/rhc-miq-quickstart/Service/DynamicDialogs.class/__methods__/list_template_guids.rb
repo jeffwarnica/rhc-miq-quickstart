@@ -37,21 +37,30 @@ module RhcMiqQuickstart
           end
 
           def main()
-
+            log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
             @user = get_user
             @rbac_array = get_current_group_rbac_array
 
             dialog_hash = {}
+            dump_root() if @DEBUG
+
+            os = ''
+            if @handle.root.attributes.key?('dialog_tag_0_os')
+              os = @handle.root['dialog_tag_0_os']
+            end
+
             @handle.vmdb(:miq_template).all.each do |template|
-              if object_eligible?(template)
+              log(:info, "checking template [#{template.name}] with tags [#{template.tags}]") if @DEBUG
+              if object_eligible?(template) && template.tagged_with?("os", os)
                 on = ' on ' + template.host.ems_cluster.name if DISPLAY_ON == 'cluster'
                 on = ' on ' + template.ext_management_system.name if DISPLAY_ON == 'provider'
                 dialog_hash[template[:guid]] = "#{template.name}#{on}"
               end
+
             end
 
             if dialog_hash.blank?
-              dialog_hash[''] = "< No templates found tagged with #{@rbac_array} >"
+              dialog_hash[''] = "< No templates found tagged with #{@rbac_array} #{os}>"
             else
               @handle.object['default_value'] = dialog_hash.first[0]
             end
@@ -62,6 +71,18 @@ module RhcMiqQuickstart
           rescue => err
             log(:error, "[(#{err.class})#{err}]\n#{err.backtrace.join("\n")}")
             exit MIQ_ABORT
+          ensure
+            log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
+          end
+          
+          
+          private
+          
+          def get_user
+            user_search = @handle.root['dialog_option_0_user_id'] || @handle.root['dialog_userid'] || @handle.root['dialog_evm_owner_id']
+            user = @handle.vmdb('user').find_by_id(user_search) || @handle.vmdb('user').find_by_userid(user_search) ||
+                @handle.root['user']
+            user
           end
         end
       end

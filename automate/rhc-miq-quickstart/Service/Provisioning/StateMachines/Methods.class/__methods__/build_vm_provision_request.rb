@@ -330,6 +330,24 @@ module RhcMiqQuickstart
                 merged_options_hash[sym] = flavor[sym]
               end
 
+              if flavor.has_key?(:disks)
+                log(:info, 'adding disks from flavor config')
+                flavor[:disks].each do |disk|
+                  log(:info, "\tMerging in disk: [#{disk.inspect}]")
+                  disk.each{|k,v| merged_options_hash[k] = v}
+                end
+              end
+
+              os_specific_disk_key = ("disks_" + @template.tags('os').first).to_sym
+
+              if flavor.has_key?(os_specific_disk_key)
+                log(:info, 'adding disks from flavor config because of OS tag')
+                flavor[os_specific_disk_key].each do |disk|
+                  log(:info, "\tMerging in disk: [#{disk.inspect}]")
+                  disk.each{|k,v| merged_options_hash[k] = v}
+                end
+              end
+
               if @template.vendor.downcase == 'redhat'
                 reserve = merged_options_hash[:vm_memory]
                 log(:info, "Force setting memory_reserve for a RHV provision to same as 'vm_memory', [#{reserve}]")
