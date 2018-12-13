@@ -39,19 +39,24 @@ module RhcMiqQuickstart
               log(:info, "Investigating miq_requests [#{vm_prov_request_ids.join(',')}]")
 
               waiting_on = []
+              vm_in_error = 0
               vm_prov_request_ids.each do |vm_request_id|
                 vm_request = @handle.vmdb(:miq_request, vm_request_id)
+                if vm_request.status == 'Error'
+                  vm_in_error+=1
+                  next
+                end
                 unless vm_request.status == 'Ok'
                   raise "miq_request #{vm_request_id} has an unexpected status of: #{vm_request.status}, aborting."
                 end
-                log(:info, "child [#{vm_request_id}] vm_request.state: #{vm_request.state}")
+                log(:info, "child [#{vm_request_id}] state: [#{vm_request.state}], status: [#{vm_request.status}]")
                 unless vm_request.state == 'finished'
                   waiting_on << vm_request_id
                 end
               end
 
               log(:info, "\twaiting_on now: [#{waiting_on.join(',')}]")
-
+              log(:info, "\tVMS in error state: [#{vm_in_error}]")
               unless waiting_on.empty?
                 interval = '60.seconds'
                 log(:info, "Waiting for miq_requests [#{waiting_on.join(',')}] to finish. Will recheck in #{interval}.", true)

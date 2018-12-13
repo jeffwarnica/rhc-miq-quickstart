@@ -181,17 +181,29 @@ module RhcMiqQuickstart
               log(:info, 'Processing get_template...', true)
 
               template_search_by_guid = merged_options_hash[:guid]
-              # template_search_by_name = merged_options_hash[:template] || merged_options_hash[:name]
+              template_search_by_name = merged_options_hash[:template] || merged_options_hash[:name]
               # template_search_by_product = merged_options_hash[:product]
               template_search_by_os = merged_options_hash[:os] || merged_tags_hash[:os]
 
               templates = []
               templates = get_templates_by_guid(template_search_by_guid) if template_search_by_guid
+              templates = get_templates_by_name(template_search_by_name) if template_search_by_name && templates.blank?
               templates = get_templates_by_os(template_search_by_os) if template_search_by_os && templates.blank?
 
-              log(:info, "here. template size: [#{templates.size}]")
+              log(:info, "Found [#{templates.size}] matching templates")
 
               # TODO: Implement "best" template logic here
+
+              match_chain = @settings.get_setting(:global, :template_match_methods)
+
+              match_chain.each do |method_to_call|
+                unless method(method_to_call.to_sym).parameters == [[:req, :templates], [:req, :merged_options_hash], [:req, :merged_tags_hash]]
+                  error("ERROR: Attempted to use method [#{method_to_call}] in template match chain, but does not match required signature")
+                end
+                templates = self.send(method_to_call.to_sym, templates, merged_options_hash, merged_tags_hash)
+              end
+
+              log(:info, "Have [#{templates.size}] templates after match processing")
 
               # get the first template in the list
               @template = templates.first
@@ -215,6 +227,18 @@ module RhcMiqQuickstart
               templates
             end
 
+            def get_templates_by_name(name)
+              log(:info, "Searching for templates tagged with #{@rbac_array} that " \
+                  "match name: #{name}")
+              templates = @handle.vmdb(:miq_template).all.select do |t|
+                object_eligible?(t) && t.ext_management_system && t.name == name
+              end
+              if templates.empty?
+                error('Unable to find a matching template. Is RBAC configured?')
+              end
+              templates
+            end
+
             def get_templates_by_os(os)
               os_category = 'os'
               log(:info, "Searching for templates tagged with #{@rbac_array} that " \
@@ -226,6 +250,17 @@ module RhcMiqQuickstart
                 error('Unable to find a matching template. Is RBAC configured, and template(s) tagged correctly?')
               end
               templates
+            end
+
+            def match_templates_by_location(templates, merged_options_hash, merged_tags_hash)
+              log(:info, 'match_template_by_locaiton()')
+              return match_template_by_tag(templates, 'location', merged_tags_hash[:location])
+            end
+
+            def match_template_by_tag(templates, category, value)
+              return templates.each do |t|
+                t.tagged_with?(category, value )
+              end
             end
 
             def get_provision_type(build, merged_options_hash, merged_tags_hash)

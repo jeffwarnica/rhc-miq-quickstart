@@ -12,10 +12,10 @@ module RhcMiqQuickstart
 
         FLAVORS = [
             # {flavor_name: 'xsmall', number_of_sockets: 1, cores_per_socket: 1, vm_memory: 1024},
-            {flavor_name: 'small', number_of_sockets: 1, cores_per_socket: 1, vm_memory: 1024, disks_windows: [{disk_1_size: 25}], disks_linux: [{disk_1_size: 25}]},
-            {flavor_name: 'medium', number_of_sockets: 1, cores_per_socket: 2, vm_memory: 2048, disks_windows: [{disk_1_size: 50}],disks_linux: [{disk_1_size: 50}]},
-            {flavor_name: 'large', number_of_sockets: 1, cores_per_socket: 4, vm_memory: 4096, disks_windows: [{disk_1_size: 100}],disks_linux: [{disk_1_size: 100}]},
-            {flavor_name: 'xlarge', number_of_sockets: 1, cores_per_socket: 8, vm_memory: 8192, disks_windows: [{disk_1_size: 200}],disks_linux: [{disk_1_size: 200}]},
+            {flavor_name: 'small', est_cost: '$37', number_of_sockets: 1, cores_per_socket: 1, vm_memory: 1024, disks_windows: [{disk_1_size: 25}], disks_linux: [{disk_1_size: 25}]},
+            {flavor_name: 'medium', est_cost: '$59', number_of_sockets: 1, cores_per_socket: 2, vm_memory: 2048, disks_windows: [{disk_1_size: 50}],disks_linux: [{disk_1_size: 50}]},
+            {flavor_name: 'large', est_cost: '$105', number_of_sockets: 1, cores_per_socket: 4, vm_memory: 4096, disks_windows: [{disk_1_size: 100}],disks_linux: [{disk_1_size: 100}]},
+            {flavor_name: 'xlarge', est_cost: '$95', number_of_sockets: 1, cores_per_socket: 8, vm_memory: 8192, disks_windows: [{disk_1_size: 200}],disks_linux: [{disk_1_size: 200}]},
         ].freeze
       end
     end

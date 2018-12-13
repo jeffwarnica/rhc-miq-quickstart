@@ -32,15 +32,21 @@ module RhcMiqQuickstart
             @handle = handle
             @DEBUG = false
             @tier = @handle.root['tier']
+            dump_root
+
             template_guid = @handle.root["dialog_option_#{@tier}_guid"]
             @template = @handle.vmdb(:vm_or_template).find_by_guid(template_guid)
+
+            unless @template
+              template_name = @handle.root["dialog_option_#{@tier}_template"]
+              @template = @handle.vmdb(:vm_or_template).find_by_name(template_name)
+            end
             @template_os = @template.tags('os').first
           end
 
           def main()
             log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
             flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
-  $evm.log(:info, " $evm.instance_variable_get(:@persist_state_hash).inspect: [#{ $evm.instance_variable_get(:@persist_state_hash).inspect}]")
 
             log(:info, flavors)
 
@@ -69,7 +75,12 @@ module RhcMiqQuickstart
                 end
                 disks = ", #{total}GB disk"
               end
-              dialog_hash[flavor[:flavor_name]] = "#{flavor[:flavor_name]} - #{cpu} vCPUs, #{flavor[:vm_memory]} MB RAM#{disks}"
+              cost = ''
+              if flavor.has_key?(:est_cost)
+                cost = " est #{flavor[:est_cost]}/mo"
+              end
+
+              dialog_hash[flavor[:flavor_name]] = "#{flavor[:flavor_name]} - #{cpu} vCPUs, #{flavor[:vm_memory]} MB RAM#{disks} #{cost}"
             end
 
             if dialog_hash.blank?
@@ -79,6 +90,8 @@ module RhcMiqQuickstart
             end
 
             @handle.object['values'] = dialog_hash
+            @handle.object['sort_by'] = 'none'
+
             log(:info, "@handle.object['values']: #{@handle.object['values'].inspect}")
 
             log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
