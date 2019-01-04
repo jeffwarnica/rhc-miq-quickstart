@@ -50,6 +50,7 @@ module RhcMiqQuickstart
             end
 
             @handle.vmdb(:miq_template).all.each do |template|
+
               log(:info, "checking template [#{template.name}] with tags [#{template.tags}]") if @DEBUG
               if object_eligible?(template) && template.tagged_with?("os", os)
                 on = ' on ' + template.host.ems_cluster.name if DISPLAY_ON == 'cluster'
