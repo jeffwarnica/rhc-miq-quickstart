@@ -5,7 +5,7 @@
 #       state variable and ensure that they are complete before moving on.
 #
 # jcutter@redhat.com 2017-10-23
-# jwarnica@redhat.com 2018-08-16 - Move to class format and longer loging
+# jwarnica@redhat.com 2018-08-16 - Move to class format and longer logging
 
 
 module RhcMiqQuickstart
