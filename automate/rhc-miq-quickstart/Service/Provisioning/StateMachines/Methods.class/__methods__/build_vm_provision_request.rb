@@ -192,9 +192,7 @@ module RhcMiqQuickstart
 
               log(:info, "Found [#{templates.size}] matching templates")
 
-              # TODO: Implement "best" template logic here
-
-              match_chain = @settings.get_setting(:global, :template_match_methods)
+              match_chain = @settings.get_setting(:global, :template_match_methods, [])
 
               match_chain.each do |method_to_call|
                 unless method(method_to_call.to_sym).parameters == [[:req, :templates], [:req, :merged_options_hash], [:req, :merged_tags_hash]]
@@ -403,8 +401,8 @@ module RhcMiqQuickstart
                 # in the retirement warning email method to reset it and thus send multiple warnings
                 log(:info, "\tRequesting user is in group [#{user_group}]. Not setting retirement values")
               else
-                merged_options_hash[:retirement] = @settings.get_setting(@region, :retirement)
-                merged_options_hash[:retirement_warn] = @settings.get_setting(@region, :retirement_warn)
+                merged_options_hash[:retirement] = @settings.get_setting(@region, :retirement, 30.days.to_i)
+                merged_options_hash[:retirement_warn] = @settings.get_setting(@region, :retirement_warn, 14.days.to_i)
               end
               log(:info, "Build: #{build} - retirement: #{merged_options_hash[:retirement]}" \
         " retirement_warn: #{merged_options_hash[:retirement_warn]}")
