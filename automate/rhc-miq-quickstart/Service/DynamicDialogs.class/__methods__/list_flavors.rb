@@ -32,13 +32,13 @@ module RhcMiqQuickstart
             @handle = handle
             @DEBUG = false
             @tier = @handle.root['tier']
-            dump_root
+            dump_root() if @DEBUG
 
-            template_guid = @handle.root["dialog_option_#{@tier}_guid"]
+            template_guid = @handle.root["dialog_option_#{@tier}_guid"] || @handle.root["dialog_option_0_guid"]
             @template = @handle.vmdb(:vm_or_template).find_by_guid(template_guid)
 
             unless @template
-              template_name = @handle.root["dialog_option_#{@tier}_template"]
+              template_name = @handle.root["dialog_option_#{@tier}_template"] || @handle.root["dialog_option_0_template"]
               @template = @handle.vmdb(:vm_or_template).find_by_name(template_name)
             end
             @template_os = @template.tags('os').first
@@ -46,9 +46,30 @@ module RhcMiqQuickstart
 
           def main()
             log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
+
+            if @template.tags('os').size == 0 || @template.tags('prov_scope').size == 0
+              dialog_hash = {}
+              msg = "Template '#{@template.name}'found, but improperly tagged"
+              dialog_hash[''] = "< #{msg} >"
+              default_value = dialog_hash.first[0]
+            else
+              dialog_hash, default_value = getDialogValues()
+            end
+
+
+            @handle.object['default_value'] = default_value
+            @handle.object['values'] = dialog_hash
+            @handle.object['sort_by'] = 'none'
+
+            log(:info, "@handle.object['values']: #{@handle.object['values'].inspect}")
+
+            log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
+          end
+
+          def getDialogValues()
             flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
 
-            log(:info, flavors)
+            log(:info, flavors) if @DEBUG
 
             dialog_hash = {}
             flavors.each do |flavor|
@@ -58,7 +79,7 @@ module RhcMiqQuickstart
 
               if flavor.has_key?(:disks)
                 flavor[:disks].each do |d|
-                  d.each do |k,v|
+                  d.each do |k, v|
                     if k.match(/disk_\d+_size/)
                       total += v
                     end
@@ -67,7 +88,7 @@ module RhcMiqQuickstart
                 disks = ", #{total}GB disk"
               elsif flavor.has_key?(("disks_" + @template_os).to_sym)
                 flavor[("disks_" + @template_os).to_sym].each do |d|
-                  d.each do |k,v|
+                  d.each do |k, v|
                     if k.match(/disk_\d+_size/)
                       total += v
                     end
@@ -85,16 +106,9 @@ module RhcMiqQuickstart
 
             if dialog_hash.blank?
               dialog_hash[''] = "< No flavors configured >"
-            else
-              @handle.object['default_value'] = dialog_hash.first[0]
             end
-
-            @handle.object['values'] = dialog_hash
-            @handle.object['sort_by'] = 'none'
-
-            log(:info, "@handle.object['values']: #{@handle.object['values'].inspect}")
-
-            log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
+            default_value = dialog_hash.first[0]
+            return dialog_hash, default_value
           end
         end
       end
