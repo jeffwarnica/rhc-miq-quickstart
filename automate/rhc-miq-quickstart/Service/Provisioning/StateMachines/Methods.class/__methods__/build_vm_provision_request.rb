@@ -148,9 +148,10 @@ module RhcMiqQuickstart
             # determine who the requesting user is
             #
             # if the dialog has a user_id filed populated, we will do a lookup
-            # (against both the totally useless CF interger ID and userid),
+            # (against both the totally useless CF integer ID and string userid),
             # and if that is a valid CF user, we will order the VMs for that user
             #
+            # Also if @settings has
             #
             def get_requester(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_requester...', true)
@@ -168,6 +169,11 @@ module RhcMiqQuickstart
               merged_options_hash[:group_name] = @user.current_group.description
               log(:info, "Build: #{build} - Group: #{merged_options_hash[:group_name]} " \
                   "id: #{merged_options_hash[:group_id]}")
+
+              if (@settings.get_setting(@region, 'service_set_owner_to_user', true))
+                @service.owner = @user
+                @service.group = @user.current_group_id
+              end
 
               log(:info, 'Processing get_requester...Complete', true)
             end
@@ -250,6 +256,19 @@ module RhcMiqQuickstart
               templates
             end
 
+            ##
+            # Filters out templates whose provider does not match the location tag
+            # e.g. for deployment by template name into a particular provider, where the templates are "the same"
+            # across multiple providers
+            def match_templates_by_provider_location(templates, merged_options_hash, merged_tags_hash)
+              log(:info, 'match_templates_by_provider_location()')
+              error('searching by provider location but no location found in form') unless merged_tags_hash.key?(:location)
+              return templates.each do |t|
+                t.ext_management_system.tagged_with?('location', merged_tags_hash[:location])
+              end
+              return match_template_by_tag(templates, 'location', merged_tags_hash[:location])
+            end
+
             def match_templates_by_location(templates, merged_options_hash, merged_tags_hash)
               log(:info, 'match_template_by_locaiton()')
               return match_template_by_tag(templates, 'location', merged_tags_hash[:location])
@@ -325,7 +344,7 @@ module RhcMiqQuickstart
 
                   #first build our lookup key
 
-                  lookup_extra_keys = @settings.get_setting(:global, :network_lookup_keys)
+                  lookup_extra_keys = @settings.get_setting(:global, :network_lookup_keys, {})
                   lookup_key = "network_#{@template.vendor.downcase}"
                   lookup_extra_keys.each { |k|
                     tag_val = merged_tags_hash[k.to_sym]
