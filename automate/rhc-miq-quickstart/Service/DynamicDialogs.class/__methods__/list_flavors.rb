@@ -35,21 +35,29 @@ module RhcMiqQuickstart
             dump_root() if @DEBUG
 
             template_guid = @handle.root["dialog_option_#{@tier}_guid"] || @handle.root["dialog_option_0_guid"]
-            @template = @handle.vmdb(:vm_or_template).find_by_guid(template_guid)
+            @template = @handle.vmdb(:vm_or_template).where(guid: template_guid).first
 
             unless @template
               template_name = @handle.root["dialog_option_#{@tier}_template"] || @handle.root["dialog_option_0_template"]
-              @template = @handle.vmdb(:vm_or_template).find_by_name(template_name)
+
+              #very stupid logic. Kinda intentional
+              templates = @handle.vmdb(:vm_or_template).where(name: template_name)
+              templates = templates.select do |t|
+                t.tagged_with?('prov_scope', 'all')
+              end
+              @template =templates.first
             end
             @template_os = @template.tags('os').first
           end
 
           def main()
             log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
+            log(:info, "Interrogating template: [#{@template.name}], guid: [#{@template.guid}]")
 
             if @template.tags('os').size == 0 || @template.tags('prov_scope').size == 0
               dialog_hash = {}
-              msg = "Template '#{@template.name}'found, but improperly tagged"
+              log(:info, "OS tag size: [#{@template.tags('os').size}], prov_scope tag size: [#{@template.tags('prov_scope').size}]")
+              msg = "Template '#{@template.name}' found, but improperly tagged"
               dialog_hash[''] = "< #{msg} >"
               default_value = dialog_hash.first[0]
             else
@@ -64,6 +72,19 @@ module RhcMiqQuickstart
             log(:info, "@handle.object['values']: #{@handle.object['values'].inspect}")
 
             log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
+          end
+
+          #bad form to duplicate this code (runninng it at all, let alone copy/paste )
+          def get_templates_by_name(name)
+            log(:info, "Searching for templates tagged with #{@rbac_array} that " \
+                  "match name: #{name}")
+            templates = @handle.vmdb(:miq_template).all.select do |t|
+              object_eligible?(t) && t.ext_management_system && t.name == name
+            end
+            if templates.empty?
+              error('Unable to find a matching template. Is RBAC configured?')
+            end
+            templates
           end
 
           def getDialogValues()

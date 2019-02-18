@@ -29,7 +29,8 @@ module RhcMiqQuickstart
         class ListTemplateGuilds
 
           include RedHatConsulting_Utilities::StdLib::Core
-          DISPLAY_ON = 'cluster'.freeze # 'cluster' or 'provider'
+          #TODO: Move to settings.rb
+          DISPLAY_ON = 'provider'.freeze # 'cluster' or 'provider'
 
           def initialize(handle = $evm)
             @handle = handle
