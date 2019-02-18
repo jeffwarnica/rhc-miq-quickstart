@@ -263,10 +263,9 @@ module RhcMiqQuickstart
             def match_templates_by_provider_location(templates, merged_options_hash, merged_tags_hash)
               log(:info, 'match_templates_by_provider_location()')
               error('searching by provider location but no location found in form') unless merged_tags_hash.key?(:location)
-              return templates.each do |t|
+              return templates.find_all do |t|
                 t.ext_management_system.tagged_with?('location', merged_tags_hash[:location])
               end
-              return match_template_by_tag(templates, 'location', merged_tags_hash[:location])
             end
 
             def match_templates_by_location(templates, merged_options_hash, merged_tags_hash)
@@ -275,7 +274,8 @@ module RhcMiqQuickstart
             end
 
             def match_template_by_tag(templates, category, value)
-              return templates.each do |t|
+              log(:info, "match_template_by_tag, [#{category}] has [#{value}]?")
+              return templates.find_all do |t|
                 t.tagged_with?(category, value )
               end
             end
