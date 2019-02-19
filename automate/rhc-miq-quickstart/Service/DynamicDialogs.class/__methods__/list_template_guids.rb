@@ -29,10 +29,10 @@ module RhcMiqQuickstart
         class ListTemplateGuilds
 
           include RedHatConsulting_Utilities::StdLib::Core
-          #TODO: Move to settings.rb
-          DISPLAY_ON = 'provider'.freeze # 'cluster' or 'provider'
 
           def initialize(handle = $evm)
+            @settings = RedHatConsulting_Utilities::StdLib::Core::Settings.new()
+            @display_on = @settings.get_setting(:global,:list_templates_show, 'provider').freeze
             @handle = handle
             @DEBUG = false
           end
@@ -54,8 +54,8 @@ module RhcMiqQuickstart
 
               log(:info, "checking template [#{template.name}] with tags [#{template.tags}]") if @DEBUG
               if object_eligible?(template) && template.tagged_with?("os", os)
-                on = ' on ' + template.host.ems_cluster.name if DISPLAY_ON == 'cluster'
-                on = ' on ' + template.ext_management_system.name if DISPLAY_ON == 'provider'
+                on = ' on ' + template.host.ems_cluster.name if @display_on == 'cluster'
+                on = ' on ' + template.ext_management_system.name if @display_on == 'provider'
                 dialog_hash[template[:guid]] = "#{template.name}#{on}"
               end
 
