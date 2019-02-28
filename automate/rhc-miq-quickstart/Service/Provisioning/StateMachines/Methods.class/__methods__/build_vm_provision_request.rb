@@ -436,6 +436,7 @@ module RhcMiqQuickstart
             # service & VMs
             #
             def copy_tags(build, merged_options_hash, merged_tags_hash)
+              return if @settings.get_setting(:global, :skip_copy_rbac_tags, false)
               # tag service with all rbac filter tags (for roles with vm access restrictions set to none)
               @rbac_array.each { |rbac_hash| tag_service(rbac_hash) }
 
