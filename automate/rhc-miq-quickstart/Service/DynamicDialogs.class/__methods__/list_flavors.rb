@@ -30,13 +30,20 @@ module RhcMiqQuickstart
 
           def initialize(handle = $evm)
             @handle = handle
-            @DEBUG = false
+            @DEBUG = true
             @tier = @handle.root['tier']
             dump_root() if @DEBUG
 
+          end
+
+          def main()
+            log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
+
+            # We are looking for a template, first by guid from our tier, or the service
             template_guid = @handle.root["dialog_option_#{@tier}_guid"] || @handle.root["dialog_option_0_guid"]
             @template = @handle.vmdb(:vm_or_template).where(guid: template_guid).first
 
+            # ... and if no guid, by name from our tier, or the service
             unless @template
               template_name = @handle.root["dialog_option_#{@tier}_template"] || @handle.root["dialog_option_0_template"]
 
@@ -45,13 +52,11 @@ module RhcMiqQuickstart
               templates = templates.select do |t|
                 t.tagged_with?('prov_scope', 'all')
               end
-              @template =templates.first
+              @template = templates.first
             end
-            @template_os = @template.tags('os').first
-          end
+            @template_os = @template.tags('os').first || ''
 
-          def main()
-            log(:info, 'Start ' + self.class.to_s + '.' + __method__.to_s)
+
             log(:info, "Interrogating template: [#{@template.name}], guid: [#{@template.guid}]")
 
             if @template.tags('os').size == 0 || @template.tags('prov_scope').size == 0
@@ -119,7 +124,7 @@ module RhcMiqQuickstart
               end
               cost = ''
               if flavor.has_key?(:est_cost)
-                cost = " est #{flavor[:est_cost]}/mo"
+                cost = " est #{flavor[:est_cost]}"
               end
 
               dialog_hash[flavor[:flavor_name]] = "#{flavor[:flavor_name]} - #{cpu} vCPUs, #{flavor[:vm_memory]} MB RAM#{disks} #{cost}"

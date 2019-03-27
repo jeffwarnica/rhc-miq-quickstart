@@ -256,30 +256,6 @@ module RhcMiqQuickstart
               templates
             end
 
-            ##
-            # Filters out templates whose provider does not match the location tag
-            # e.g. for deployment by template name into a particular provider, where the templates are "the same"
-            # across multiple providers
-            def match_templates_by_provider_location(templates, merged_options_hash, merged_tags_hash)
-              log(:info, 'match_templates_by_provider_location()')
-              error('searching by provider location but no location found in form') unless merged_tags_hash.key?(:location)
-              return templates.find_all do |t|
-                t.ext_management_system.tagged_with?('location', merged_tags_hash[:location])
-              end
-            end
-
-            def match_templates_by_location(templates, merged_options_hash, merged_tags_hash)
-              log(:info, 'match_template_by_locaiton()')
-              return match_template_by_tag(templates, 'location', merged_tags_hash[:location])
-            end
-
-            def match_template_by_tag(templates, category, value)
-              log(:info, "match_template_by_tag, [#{category}] has [#{value}]?")
-              return templates.find_all do |t|
-                t.tagged_with?(category, value )
-              end
-            end
-
             def get_provision_type(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_provision_type...', true)
               case @template.vendor.downcase
@@ -338,36 +314,30 @@ module RhcMiqQuickstart
             def get_network(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_network...', true)
 
-              case @template.vendor.downcase
-              when 'vmware', 'redhat'
-                if merged_options_hash[:vlan].blank?
+              lookup_strategy = @settings.get_setting(:global, :network_lookup_strategy, 'simple')
 
-                  #first build our lookup key
-
-                  lookup_extra_keys = @settings.get_setting(:global, :network_lookup_keys, {})
-                  lookup_key = "network_#{@template.vendor.downcase}"
-                  lookup_extra_keys.each { |k|
-                    tag_val = merged_tags_hash[k.to_sym]
-                    log(:info, "adding key from [#{k}] which is [#{tag_val}]")
-                    lookup_key += "_#{tag_val}"
-                  }
-                  lookup_key = lookup_key.to_sym
-
-                  log(:info, "Searching for vlan name with key [#{lookup_key}]")
-
-                  # Set a default vlan here
-                  vlan = @settings.get_setting(@region, lookup_key)
-                  log(:info, "\tsetting vlan to: [#{vlan}]")
-                  merged_options_hash[:vlan] = vlan
-                end
-              when 'microsoft'
-                if merged_options_hash[:vlan].blank? && merged_tags_hash[:ipam_path]
-                  merged_options_hash[:vlan] = merged_tags_hash[:ipam_path]
-                end
+              method_to_call = "network_lookup_strategy_#{lookup_strategy}".to_sym
+              unless respond_to?(method_to_call)
+                error("ERROR: Attempted to use unimplemented network lookup strategy [#{lookup_strategy}]")
               end
+
+              vlan = send(method_to_call, merged_options_hash, merged_tags_hash)
+
+              case @template.vendor.downcase
+              when 'redhat'
+                vnic_profile_id = Automation::Infrastructure::VM::RedHat::Utils.new(@template.ext_management_system).vnic_profile_id(vlan)
+                log(:info, "RHV takes a vnic_profile_id => #{vnic_profile_id}") if @DEBUG
+                vlan = vnic_profile_id
+              end
+
+              log(:info, "\tsetting vlan to: [#{vlan}]")
+              merged_options_hash[:vlan] = vlan
+
+
               log(:info, "Build: #{build} - vlan: #{merged_options_hash[:vlan]}")
               log(:info, 'Processing get_network...Complete', true)
             end
+
 
             def get_flavor(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_flavor...', true)
@@ -386,7 +356,7 @@ module RhcMiqQuickstart
                 log(:info, 'adding disks from flavor config')
                 flavor[:disks].each do |disk|
                   log(:info, "\tMerging in disk: [#{disk.inspect}]")
-                  disk.each{|k,v| merged_options_hash[k] = v}
+                  disk.each { |k, v| merged_options_hash[k] = v }
                 end
               end
 
@@ -396,7 +366,7 @@ module RhcMiqQuickstart
                 log(:info, 'adding disks from flavor config because of OS tag')
                 flavor[os_specific_disk_key].each do |disk|
                   log(:info, "\tMerging in disk: [#{disk.inspect}]")
-                  disk.each{|k,v| merged_options_hash[k] = v}
+                  disk.each { |k, v| merged_options_hash[k] = v }
                 end
               end
 
@@ -620,4 +590,75 @@ end #module
 
 if __FILE__ == $PROGRAM_NAME
   RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::BuildVmProvisionRequest.new.main()
+end
+
+
+# Helper methods, optionally used for different filtering tasks
+#
+# These are in the global namespace to make it easier for implementors to provide local
+# custom helpers.
+
+
+
+# VLAN Lookup Strategies
+
+def network_lookup_strategy_simple(merged_options_hash, merged_tags_hash)
+  log(:info, 'Processing network_lookup_strategy_simple...', true)
+  return @settings.get_setting(:global, :network_lookup_simple, {})
+end
+
+def network_lookup_strategy_manualbytag(merged_options_hash, merged_tags_hash)
+  log(:info, 'Processing network_lookup_strategy_manualbytag...', true)
+
+  lookup_extra_keys = @settings.get_setting(:global, :network_lookup_manualbytags_keys, {})
+  lookup_key = 'network_lookup_manualbytags_lookup'
+  lookup_extra_keys.each do |k|
+    tag_val = case k
+              when '@vendor'
+                @template.vendor.downcase
+              when '@ems'
+                @template.ext_management_system.name.gsub(/\W/, "_").downcase
+              else
+                merged_tags_hash[k.to_sym]
+              end
+    log(:info, "adding key from [#{k}] which is [#{tag_val}]")
+    lookup_key += "_#{tag_val}"
+  end
+  lookup_key = lookup_key.to_sym
+
+  log(:info, "Searching for vlan name with key [#{lookup_key}]")
+
+  begin
+    vlan = @settings.get_setting(@region, lookup_key)
+  rescue => err
+    log(:info, "ERROR was [#{err}]")
+    error("Generated lookup key [#{lookup_key}] was unable to find a VLAN name")
+  end
+end
+
+
+# Template matching helpers
+
+##
+# Filters out templates whose provider does not match the location tag
+# e.g. for deployment by template name into a particular provider, where the templates are "the same"
+# across multiple providers
+def match_templates_by_provider_location(templates, merged_options_hash, merged_tags_hash)
+  log(:info, 'match_templates_by_provider_location()')
+  error('searching by provider location but no location found in form') unless merged_tags_hash.key?(:location)
+  return templates.find_all do |t|
+    t.ext_management_system.tagged_with?('location', merged_tags_hash[:location])
+  end
+end
+
+def match_templates_by_location(templates, merged_options_hash, merged_tags_hash)
+  log(:info, 'match_template_by_locaiton()')
+  return match_template_by_tag(templates, 'location', merged_tags_hash[:location])
+end
+
+def match_template_by_tag(templates, category, value)
+  log(:info, "match_template_by_tag, [#{category}] has [#{value}]?")
+  return templates.find_all do |t|
+    t.tagged_with?(category, value)
+  end
 end

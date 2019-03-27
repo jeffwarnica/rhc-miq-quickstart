@@ -2,8 +2,9 @@
 #
 #  Author: Jeff Warnica <jwarnica@redhat.com> 2018-08-16
 #
-# Provides a common location for settings for RedHatConsulting_Utilities,
-# and some defaults for the children project like rhc-miq-quickstart
+# The settingstore for RHC-MIQ-Quickstart
+#
+# JeffW: Contrived examples matching names in RHPDS v2v 1.2 environment (or a tuned one, anyway)
 #
 # Settings are Global, Default, and by RegionID, with regional settings falling through to Default
 #-------------------------------------------------------------------------------
@@ -33,23 +34,77 @@ module RhcMiqQuickstart
 
         SETTINGS = {
           global: {
-            # ordered list of CF tag names to use to create the vlan settings key,
+
+
+            # Network selection look strategy.
             #
-            # This helps build the setting name for VLAN lookups. Format is as:
-            #    network_<template vendor>_key1_key2_..._keyN
+            #   Ultimately, we want a "network name", for a very lose concept of network name
+            #             RHV, this is actually vNic profile name
+            #
+            # Valid options are: 'simple' or 'manualbytag'
+            network_lookup_strategy: 'manualbytag',
+
+            # simple is dead simple. Set the "network name"
+            network_lookup_simple: 'ovirtmgmt',
+
+            # ordered list of CF tag category names to use to create the vlan settings key
+            #
+            # Provides a level of indirection for finding VLAN names. Dynamically hunts for configuration
+            # keys, from the configured tag categories, and user provided values from a dialog
+            #
+            # Format is as:
+            #    network_<template>_key1_key2_..._keyN
+            #
+            # SPECIAL MAGICAL TAGS THAT OBVIOUSLY ARE NOT TAG CATEGORIES AND ONLY USEFUL HERE
+            #   @vendor --> translates to the templates 'vendor', which means like 'vmware' or 'redhat'
+            #   @ems    --> translates to the templates providers _name_, which is downcased,
+            #                 and non-word characters translated to underscores
+            #                 e.g. "my vcenter"         --> "my_vcenter"
+            #                      "vmware Rocks! kids" --> "vmware_rocks__kids"
+            #
             # consider the following examples
             #
-            # vmware templates:
-            # network_lookup_keys: %w(location environment)
-            #         ---> network_vmware_NYC_DEV OR network_vmware_PARIS_QA
-            # network_lookup_keys: %w(servicelevel location environment)
-            #         ---> network_vmware_GOLD_NYC_DEV OR network_vmware_BRONZE_PARIS_QA
+            # network_lookup_manualbytags_keys: %w(@vendor location environment)
+            #   we generate a new "lookup key" that might look like the following:
+            #     ---> network_lookup_manualbytags_lookup_vmware_nyc_dev
+            #     ---> network_lookup_manualbytags_lookup_vmware_paris_qa
+            #   and you configure here the actual "vlan name". e.g.
             #
-            network_lookup_keys: %w(environment),
+            #         network_lookup_manualbytags_lookup_vmware_nyc_dev: 'dvs_810_nyc_dev;
+            #         network_lookup_manualbytags_lookup_vmware_paris_qa: 'dvs_164_paris_qa',
+            #
+            # Obviously, you can have the same "vlan" in a few places. And IDK what crazyness you might get to
+            # in naming a provider. Say you got one named 'Extra C00l vSpheré'
+            # network_lookup_manualbytags_keys: %w(@ems servicelevel location environment)
+            #
+            #         network_lookup_manualbytags_lookup_extra_c00l_vspher__gold_nyc_dev: 'dvs_131_nyc',
+            #         network_lookup_manualbytags_lookup_extra_c00l_vspher__silver_nyc_dev: 'dvs_131_nyc',
+            #         network_lookup_manualbytags_lookup_extra_c00l_vspher__silver_nyc_dev: 'dvs_131_nyc',
+            #         network_lookup_manualbytags_lookup_extra_c00l_vspher__bronze_nyc_dev: 'dvs_nyc_old_10bT',
+            #   (note the double __ as é --> _ + the separator)
+
+            network_lookup_manualbytags_keys: %w(@vendor @ems environment),
+
+            #NOTE: Put these in global: or a region
+            #network_lookup_manualbytags_lookup_XXXXX: 'my_vlan',
+
 
             # triggers prov.set_option(:vm_auto_start, [false, 0]) if true.
             # Helpful for post-provisioning hardware updates (e.g. additional disks)
             vm_auto_start_suppress: true,
+
+
+            # Dynamic Dialog Helper Settings
+
+            # A list of tag category names that list_template_guids will filter on.
+            #
+            # This would allow a dialog to have tag categories like env: test/dev/prod or os: linux/windows
+            #
+            # In given tier, use , use tag_0_<thingy>, and override with tag_N_<thingy>
+            #
+            # If a given dialog is missing tag_N_<thingy>, that filter is ignored
+            #
+            list_template_guid_match_tags: %w(os env),
           },
 
           default: {
@@ -66,6 +121,20 @@ module RhcMiqQuickstart
 
             # maximum number of user triggered retirement extensions
             retirement_max_extensions: 3,
+
+            #Our vlans are the same in all regions (HA!)
+
+            network_lookup_manualbytags_lookup_vmware_vsphere_prod: 'VM Network',
+            network_lookup_manualbytags_lookup_vmware_vsphere_test: 'VM Network',
+            network_lookup_manualbytags_lookup_vmware_vsphere_dev: 'VM Network',
+            network_lookup_manualbytags_lookup_vmware_vsphere_qa: 'VM Network',
+            network_lookup_manualbytags_lookup_vmware_vsphere_quar: 'VM Network',
+
+            network_lookup_manualbytags_lookup_redhat_rhv_prod: 'ovirtmgmt',
+            network_lookup_manualbytags_lookup_redhat_rhv_test: 'ovirtmgmt',
+            network_lookup_manualbytags_lookup_redhat_rhv_dev: 'ovirtmgmt',
+            network_lookup_manualbytags_lookup_redhat_rhv_qa: 'ovirtmgmt',
+            network_lookup_manualbytags_lookup_redhat_rhv_quar: 'ovirtmgmt',
           },
 
           r901: {
