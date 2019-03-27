@@ -178,9 +178,9 @@ if __FILE__ == $PROGRAM_NAME
   RhcMiqQuickstart::Automate::Service::DynamicDialogs::ListTemplateGuilds.new.main()
 end
 
-foo = { a: "a" }
-bar = { b: "b" }
-baz = { a: "baz override" }
-
-foo.deep_merge!(bar).deep_merge!(baz)
-puts foo
+# foo = { a: "a" }
+# bar = { b: "b" }
+# baz = { a: "baz override" }
+#
+# foo.deep_merge!(bar).deep_merge!(baz)
+# puts foo
