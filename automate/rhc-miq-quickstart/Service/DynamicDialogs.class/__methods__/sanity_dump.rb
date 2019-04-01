@@ -40,7 +40,11 @@ module RhcMiqQuickstart
             flavors = RhcMiqQuickstart::Automate::Common::FlavorConfig::FLAVORS
             settings = RedHatConsulting_Utilities::StdLib::Core::Settings.new()
 
-            value = "FLAVORS:\n" + flavors.to_s + "\nSETTINGS:\n" + settings.get_effective_settings.to_s + "\n"
+            value = "*** RUNTIME CONFIGURATION ***\n"
+            value += "*** FLAVORS:\n" + flavors.to_s + "\n\n"
+            value += "*** SETTINGS:\n" + settings.get_effective_settings.to_s + "\n\n"
+
+            value += "*** Sanity Checking Providers ***\n\n"
 
             @handle.vmdb(:ems).all.each do |provider|
               value += "Provider: [#{provider.name}] is a [#{provider.type}]\n"
@@ -54,7 +58,7 @@ module RhcMiqQuickstart
                 value += "\tDatastores: >0 tagged? [" + (provider.storages.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tCluster:    >0 tagged? [" + (provider.ems_clusters.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - WARNING - If DRS, tags needed') + "]\n"
               else
-                value += "\tNo sanity check implemented"
+                value += "\tNo sanity check implemented\n"
               end
               value += "\n"
             end
