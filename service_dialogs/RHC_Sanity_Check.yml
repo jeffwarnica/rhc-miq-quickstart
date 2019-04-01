@@ -37,8 +37,8 @@
           :protected: false
         label: Sanity Output
         position: 0
-        validator_type: f
-        validator_rule: 
+        validator_type: regex
+        validator_rule: qwertyuioasdfghjklzxcvbnm
         reconfigurable: false
         dynamic: true
         show_refresh_button: true
