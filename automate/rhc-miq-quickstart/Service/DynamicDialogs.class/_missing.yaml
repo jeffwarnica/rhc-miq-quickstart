@@ -8,5 +8,5 @@ object:
     inherits: 
     description: 
   fields:
-  - job_template_name:
+  - method1:
       value: "${#_missing_instance}"
