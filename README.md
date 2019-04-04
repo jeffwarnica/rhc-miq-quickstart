@@ -12,19 +12,25 @@ https://github.com/RedHatOfficial/miq-Utilities
 
 # Setup & Demo
 
-## Setup
+## Setup - TL;dr
 
-With miq-Utilities and this installed in automate create or reuse a high priority
-'variables' domain.
+* Recommended: install on an appliance the [miqimport/export scripts](https://github.com/rhtconsulting/cfme-rhconsulting-scripts)
+* Install [miq-Utilities](https://github.com/RedHatOfficial/miq-Utilities), at least the automate part
+* Install this project
+* Update 'settings.rb' to include other settingsstore's
+  * Create or reusing a high-priority 'variables' domain:
+  * Copy RedHatConsulting_Utilities/StdLib/Settings/settings into the variables domain
+  * Copy rhc-miq-quickstart/StdLib/Settings/settingsstore into the variable domain
+    * Update the Module name & set PRIORITY to a high number
+* Import the Service Dialogs and Service Catalog from the command line
 
-Copy into it the settings method from miq-Utilities, and configure it to have embedded
-methods of settingsstore from at least miq-Utilities and this domain. Go ahead and create
-your own settingsstore method.
+* Review "Admin Sanity Check" SC : the dynamic text output should help guiding
+  additional tagging and other configuration you need to do.
 
-A new Service Catalog dialog using the "RHC Sanity Dump" Dialog may be helpful.
-It doesn't  guarantee success, but it'll keep you from feeling stupid if you
-forget to tag something. More importantly, it'll keep you from looking stupid
-if you forget to tag something.
+## Setup - Settings
+
+This project, today, does not provide revolutionary features,
+
 
 # Design goals
 * To facilitate getting CloudForms up and running quickly.
@@ -32,6 +38,10 @@ if you forget to tag something.
 in the core product.
 * Configuration over coding.
 * Configuration in one location over instance variables.
+* Using gratuitous amounts of log messages (at DEBUG or not) for onging
+  debugging and code documentation purposes
+* Especially print human readable error messages, if possible, with fix
+  suggestions (eg "did you tag?")
 
 
 Tracking current CF releases is more important than backwards compatibility.
@@ -103,17 +113,6 @@ but may be a good admin/debugging tool.
 
 # Success Criteria
 
-# Development Process
-
-The inspiration and design for this is the CF 4.2 targeted version of CloudForms
-Essentials, and to get to 1.0, it is anticipated that much code from that will
-simply be copied from that project, refactored to the class structure of code,
-and with advanced and complex features dropped.
-
-To not directly require the now old (4.2) versions of CF_E which I consider
-useful. This implies I'm allowing myself to straight copy some of those files.
-This includes drop down helpers, and will expand as I need them.
-
 
 # Inspiration & Sources
 
@@ -122,4 +121,6 @@ The aforementioned miq-Utilities.
 https://github.com/ramrexx/CloudForms_Essentials/
 
 https://github.com/jeffmcutter/cf_shortcuts/tree/master/build_vm_provision_request
+
+# Extensions and Configuration
 

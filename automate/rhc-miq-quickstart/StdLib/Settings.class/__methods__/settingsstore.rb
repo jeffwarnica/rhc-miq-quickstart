@@ -105,6 +105,9 @@ module RhcMiqQuickstart
             # If a given dialog is missing tag_N_<thingy>, that filter is ignored
             #
             list_template_guid_match_tags: %w(os env),
+
+
+            template_match_methods: %w(align_tags),
           },
 
           default: {

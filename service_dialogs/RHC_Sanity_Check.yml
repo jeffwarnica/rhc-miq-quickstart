@@ -1,0 +1,58 @@
+---
+- description: RHC Sanity Check
+  buttons: submit,cancel
+  label: RHC Sanity Check
+  dialog_tabs:
+  - description: 
+    display: 
+    label: New tab
+    display_method: 
+    display_method_options: 
+    position: 0
+    dialog_groups:
+    - description: 
+      display: 
+      label: New section
+      display_method: 
+      display_method_options: 
+      position: 0
+      dialog_fields:
+      - name: option_0_sanity_out
+        description: ''
+        type: DialogFieldTextAreaBox
+        data_type: 
+        notes: 
+        notes_display: 
+        display: edit
+        display_method: 
+        display_method_options: {}
+        required: false
+        required_method: 
+        required_method_options: {}
+        default_value: ''
+        values: 
+        values_method: 
+        values_method_options: {}
+        options:
+          :protected: false
+        label: Sanity Output
+        position: 0
+        validator_type: regex
+        validator_rule: qwertyuioasdfghjklzxcvbnm
+        reconfigurable: false
+        dynamic: true
+        show_refresh_button: true
+        load_values_on_init: true
+        read_only: false
+        auto_refresh: false
+        trigger_auto_refresh: false
+        visible: true
+        resource_action:
+          action: 
+          resource_type: DialogField
+          ae_namespace: Service
+          ae_class: DynamicDialogs
+          ae_instance: sanity_dump
+          ae_message: 
+          ae_attributes: {}
+        dialog_field_responders: []
