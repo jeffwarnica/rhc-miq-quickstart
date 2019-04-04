@@ -69,3 +69,28 @@ Assuming neither of us screwed up writing or following the above, the SC items
 "Generic VM From Env and OS" and "Generic VM From Template" should work.  Or
 produce nice log messages telling you in English what messed up.
 
+## Things to note, play with, and test
+
+### settings:
+* list_template_guid_match_tags: see comment there
+* template_match_methods: only the one is implemented, but take not it can be
+  overridden
+
+### build_vm_provision_request
+
+Note the the VLAN lookup logic. If setting network_lookup_strategy: 'manualbytag',
+using tags, build a new settings key, and lookup from that a literal value.
+
+Maybe implement a new VlanHelper.
+
+Note the template matching logic. By GUID or Name is as expected, but the chain
+mechanism is new, with align_tags being implemented.
+
+Maybe implement a new TemplateHelpers
+
+### Placement
+
+The placement critera and order are now configured in settings.rb.
+
+infra_best_fit_with_scope has merged the RHV and VMWare logic. It doesn't
+explode, but not tested under a loaded system; VMs end up somewhere.
