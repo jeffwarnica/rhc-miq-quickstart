@@ -199,9 +199,10 @@ module RhcMiqQuickstart
               # templates = get_templates_by_os(template_search_by_os) if template_search_by_os && templates.blank?
               templates = @handle.vmdb(:miq_template).all if templates.blank?
 
-              log(:info, "Found [#{templates.size}] matching templates")
+              log(:info, "\tFound [#{templates.size}] matching templates")
 
               match_chain = @settings.get_setting(:global, :template_match_methods, [])
+              log(:info, "\tFollowing template match chain:[#{match_chain}]")
 
               match_chain.each do |method_to_call|
                 method_to_call = "match_templates_by_#{method_to_call}"
@@ -211,20 +212,20 @@ module RhcMiqQuickstart
                 m = RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::TemplateHelpers.method(method_to_call.to_sym)
                 needed_signature = [[:req, :caller], [:req, :build], [:req, :templates], [:req, :merged_options_hash], [:req, :merged_tags_hash]]
                 unless m.parameters == needed_signature
-                  log(:info, "Looking for signature: #{needed_signature}")
-                  log(:info, " ...But got signature: #{m.parameters}")
+                  log(:info, "\tLooking for signature: #{needed_signature}")
+                  log(:info, "\t...But got signature: #{m.parameters}")
                   error("ERROR: Attempted to use method [#{method_to_call}] in template match chain, but does not match required signature")
                 end
                 templates = m.call(self, build, templates, merged_options_hash, merged_tags_hash)
               end
 
-              log(:info, "Have [#{templates.size}] templates after match processing. If >0 going to select one basically randomly.")
+              log(:info, "\tHave [#{templates.size}] templates after match processing. If >0 going to select one basically randomly.")
               error("Found 0 templates after filtering. Can not proceed") if templates.size.zero?
 
               # get the first template in the list
               @template = templates.first
 
-              log(:info, "Build: #{build} - template: #{@template.name} guid: #{@template.guid} on provider: #{@template.ext_management_system.name}")
+              log(:info, "\tBuild: #{build} - template: #{@template.name} guid: #{@template.guid} on provider: #{@template.ext_management_system.name}")
               merged_options_hash[:name] = @template.name
               merged_options_hash[:guid] = @template.guid
               log(:info, 'Processing get_template...Complete', true)
