@@ -678,35 +678,50 @@ module RhcMiqQuickstart
           module TemplateHelpers
             # Template matching helpers
 
+            #
+            # Template matches _any_ tag category value, and _every_ category
             def self.match_templates_by_align_tags(caller, build, templates, merged_options_hash, merged_tags_hash)
 
               @handle = caller.handle
-              @handle.log(:info, 'match_templates_by_align_tags()')
+              @handle.log(:info, '\tmatch_templates_by_align_tags()')
 
               consider_as_tags = caller.settings.get_setting(caller.region, :consider_as_tags, %w[os environment])
 
               tags_to_match = {}
               merged_tags_hash.each do |c, v|
-                @handle.log(:info, "looking for tags to consider from merged_tags_hash. does [#{consider_as_tags}].include?([#{c}])")
-                next unless consider_as_tags.map{|x| x.to_sym}.include?(c)
+                @handle.log(:info, "\t\tlooking for tags to consider from merged_tags_hash. does [#{consider_as_tags}].include?([#{c}])")
+                next unless consider_as_tags.map { |x| x.to_sym }.include?(c)
                 tags_to_match[c] = v
               end
               merged_options_hash.each do |c, v|
-                @handle.log(:info, "looking for tags to consider from merged_options_hash. does [#{consider_as_tags}].include?([#{c}])")
-                next unless consider_as_tags.map{|x| x.to_sym}.include?(c)
+                @handle.log(:info, "\t\tlooking for tags to consider from merged_options_hash. does [#{consider_as_tags}].include?([#{c}])")
+                next unless consider_as_tags.map { |x| x.to_sym }.include?(c)
                 tags_to_match[c] = v
               end
 
-              @handle.log(:info, "Considering the following 'tag' values: [#{tags_to_match}]")
+              @handle.log(:info, "\t\tConsidering the following 'tag' values: [#{tags_to_match}]")
 
-              potential_templates = []
+              template_matching_tag = {}
+              irrelevant_valid_category = ''
+
+              # loop through each tag category, finding, for each category, templates that match
               tags_to_match.each do |category, values|
-                @handle.log(:info, "Checking templates to find matched with [#{category} -> #{values}]")
+                @handle.log(:info, "\t\tChecking templates to find matched with [#{category} -> #{values}]")
                 templates.find_all do |template|
                   next unless Array.wrap(values).find { |value| template.tagged_with?(category, value) }
-                  potential_templates << template
+                  template_matching_tag[category.to_sym] << template
+                  irrelevant_valid_category = category.to_sym
                 end
+                @handle.log(:info, "\t\tGot [#{template_matching_tag[category.to_sym].size}] that match in this category")
               end
+
+              @handle.log(:info, "\t\tintersecting those ^")
+              # and then find the intersection of those
+              potential_templates = template_matching_tag[irrelevant_valid_category]
+              template_matching_tag.each do |arr_of_templates|
+                potential_templates &= arr_of_templates
+              end
+              @handle.log(:info, "\ttmatch_templates_by_align_tags returning [#{potential_templates.size}] templates")
               potential_templates
             end
 
@@ -718,7 +733,7 @@ module RhcMiqQuickstart
 
             def self.match_templates_by_provider_location(caller, build, templates, merged_options_hash, merged_tags_hash)
               @handle = caller.handle
-              @handle.log(:info, 'match_templates_by_provider_location()')
+              @handle.log(:info, '\tmatch_templates_by_provider_location()')
               error('searching by provider location but no location found in form') unless merged_tags_hash.key?(:location)
               templates.find_all do |t|
                 t.ext_management_system.tagged_with?('location', merged_tags_hash[:location])
@@ -727,13 +742,13 @@ module RhcMiqQuickstart
 
             def self.match_templates_by_location(caller, build, templates, merged_options_hash, merged_tags_hash)
               @handle = caller.handle
-              @handle.log(:info, 'match_templates_by_locaiton()')
+              @handle.log(:info, '\tmatch_templates_by_locaiton()')
               match_template_by_tag(@handle, build, templates, 'location', merged_tags_hash[:location])
             end
 
             def self.match_template_by_tag(caller, build, templates, category, value)
               @handle = caller.handle
-              @handle.log(:info, "match_templates_by_tag, [#{category}] has [#{value}]?")
+              @handle.log(:info, "\tmatch_templates_by_tag, [#{category}] has [#{value}]?")
               templates.find_all do |t|
                 t.tagged_with?(category, value)
               end
