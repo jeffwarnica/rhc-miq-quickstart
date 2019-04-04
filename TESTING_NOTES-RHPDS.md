@@ -41,7 +41,7 @@ VMWare, RHV and OpenStack.
       * update the top level "Module" to anyhting else ("Lab", say)
       * Change the priority from 0 to, say 100 and curse that you remember BASIC line numbers
   * Datstores might look like this:
-    ![like this][Docs/AutomateSetup.png]
+    ![like this](Docs/AutomateSetup.png)
   * Give "admin" and email address so he can provision stuff (email won't work anyway)
   * Import the Servie Dialogs and Service Catalogs from this project, with the command line tools:
     `[root@cf rhc-miq-quickstart]# miqimport service_dialogs service_dialogs/`
