@@ -21,13 +21,11 @@ https://github.com/RedHatOfficial/miq-Utilities
   * Create or reusing a high-priority 'variables' domain:
   * Copy RedHatConsulting_Utilities/StdLib/Settings/settings into the variables domain
   * Copy rhc-miq-quickstart/StdLib/Settings/settingsstore into the variable domain
+    * Update the Module name & set PRIORITY to a high number
+* Import the Service Dialogs and Service Catalog from the command line
 
-    For settingsstore, change the Module name. This avoids erroneous but scary log messages.
-* Create a Service Catalog item using the 'RHC Sanity Check' Service Dialog.
-  Entry point is irrelevant, it will fail if submitted, and a regex check should
-  make that impossible.
-  * The dynamic text output should help guiding additional tagging and other
-    configuration you need to do.
+* Review "Admin Sanity Check" SC : the dynamic text output should help guiding
+  additional tagging and other configuration you need to do.
 
 ## Setup - Settings
 
