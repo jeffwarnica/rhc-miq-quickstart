@@ -382,7 +382,13 @@ module RhcMiqQuickstart
                 end
               end
 
-              os_specific_disk_key = ("disks_" + @template.tags('os').first).to_sym
+              os_tag = @template.tags('os').first
+
+              if os_tag.nil?
+                error("Template [#{@template.name}] does not have an OS tag.")
+              end
+
+              os_specific_disk_key = ('disks_' + os_tag).to_sym
 
               if flavor.has_key?(os_specific_disk_key)
                 log(:info, 'adding disks from flavor config because of OS tag')
