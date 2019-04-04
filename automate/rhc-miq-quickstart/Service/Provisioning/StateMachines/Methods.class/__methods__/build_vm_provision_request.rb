@@ -219,11 +219,13 @@ module RhcMiqQuickstart
                 templates = m.call(self, build, templates, merged_options_hash, merged_tags_hash)
               end
 
-              log(:info, "\tHave [#{templates.size}] templates after match processing. If >0 going to select one basically randomly.")
+              log(:info, "\tHave [#{templates.size}] templates after match processing.")
               error("Found 0 templates after filtering. Can not proceed") if templates.size.zero?
 
+              log(:info, "\tAs we still have >1, going to select one basically randomly.") if templates.size > 1
+
               # get the first template in the list
-              @template = templates.first
+              @template = templates.sample(1)
 
               log(:info, "\tBuild: #{build} - template: #{@template.name} guid: #{@template.guid} on provider: #{@template.ext_management_system.name}")
               merged_options_hash[:name] = @template.name
@@ -706,14 +708,14 @@ module RhcMiqQuickstart
 
               # loop through each tag category, finding, for each category, templates that match
               tags_to_match.each do |category, values|
-                @handle.log(:info, "\t\tChecking templates to find matched with [#{category} -> #{values}]")
+                @handle.log(:info, "\t\t\tChecking templates to find matched with [#{category} -> #{values}]")
                 templates.find_all do |template|
                   template_matching_tag[category.to_sym] ||= []
                   next unless Array.wrap(values).find { |value| template.tagged_with?(category, value) }
                   template_matching_tag[category.to_sym] << template
                   irrelevant_valid_category = category.to_sym
                 end
-                @handle.log(:info, "\t\tGot [#{template_matching_tag[category.to_sym].size}] that match in this category")
+                @handle.log(:info, "\t\t\tGot [#{template_matching_tag[category.to_sym].size}] that match in category: [#{category}]")
               end
 
               @handle.log(:info, "\t\tintersecting those ^")
@@ -722,7 +724,7 @@ module RhcMiqQuickstart
               template_matching_tag.each do |arr_of_templates|
                 potential_templates &= arr_of_templates
               end
-              @handle.log(:info, "\ttmatch_templates_by_align_tags returning [#{potential_templates.size}] templates")
+              @handle.log(:info, "\tmatch_templates_by_align_tags returning [#{potential_templates.size}] templates")
               potential_templates
             end
 
