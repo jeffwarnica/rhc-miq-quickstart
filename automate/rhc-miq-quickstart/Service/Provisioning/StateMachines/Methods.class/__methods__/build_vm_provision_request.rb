@@ -708,6 +708,7 @@ module RhcMiqQuickstart
               tags_to_match.each do |category, values|
                 @handle.log(:info, "\t\tChecking templates to find matched with [#{category} -> #{values}]")
                 templates.find_all do |template|
+                  template_matching_tag[category.to_sym] ||= []
                   next unless Array.wrap(values).find { |value| template.tagged_with?(category, value) }
                   template_matching_tag[category.to_sym] << template
                   irrelevant_valid_category = category.to_sym
