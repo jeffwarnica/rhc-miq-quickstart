@@ -53,7 +53,7 @@
         ae_message:
         ae_attributes:
           :service_action: Provision
-        dialog_label: generic_build_vmprovision_request_based_on_choosing_a_template
+        dialog_label: RHC_generic_build_vmprovision_request_based_on_choosing_a_template
       - action: Retirement
         ae_namespace: Service/Retirement/StateMachines
         ae_class: ServiceRetirement
@@ -61,7 +61,7 @@
         ae_message:
         ae_attributes:
           :service_action: Retirement
-        dialog_label: generic_build_vmprovision_request_based_on_choosing_a_template
+        dialog_label: RHC_generic_build_vmprovision_request_based_on_choosing_a_template
       custom_buttons: []
       custom_button_sets: []
     - name: Generic VM From Template (3 tier)
@@ -83,7 +83,7 @@
         ae_message:
         ae_attributes:
           :service_action: Provision
-        dialog_label: generic_build_vmprovision_request_based_on_choosing_a_template_3_tier
+        dialog_label: RHC_generic_build_vmprovision_request_based_on_choosing_a_template_3_tier
       - action: Retirement
         ae_namespace: Service/Retirement/StateMachines
         ae_class: ServiceRetirement
@@ -91,6 +91,6 @@
         ae_message:
         ae_attributes:
           :service_action: Retirement
-        dialog_label: generic_build_vmprovision_request_based_on_choosing_a_template_3_tier
+        dialog_label: RHC_generic_build_vmprovision_request_based_on_choosing_a_template_3_tier
       custom_buttons: []
       custom_button_sets: []
