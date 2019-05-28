@@ -23,7 +23,7 @@
         ae_message:
         ae_attributes:
           :service_action: Provision
-        dialog_label: generic_build_vmprovision_request_based_on_env_and_os
+        dialog_label: RHC_generic_build_vmprovision_request_based_on_env_and_os
       - action: Retirement
         ae_namespace: Service/Retirement/StateMachines
         ae_class: ServiceRetirement
@@ -31,7 +31,7 @@
         ae_message:
         ae_attributes:
           :service_action: Retirement
-        dialog_label: generic_build_vmprovision_request_based_on_env_and_os
+        dialog_label: RHC_generic_build_vmprovision_request_based_on_env_and_os
       custom_buttons: []
       custom_button_sets: []
     - name: Generic VM From Template
