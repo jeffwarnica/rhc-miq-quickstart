@@ -13,5 +13,6 @@ object:
     - "/StdLib/Core/Core"
     - "/Common/FlavorConfig/flavorconfig"
     - "/StdLib/Settings/Settings"
+    - "/Common/Helpers/TemplateHelpers"
     options: {}
   inputs: []
