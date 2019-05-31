@@ -47,21 +47,26 @@ module RhcMiqQuickstart
             value += "*** Sanity Checking Providers ***\n\n"
 
             @handle.vmdb(:ems).all.each do |provider|
-              value += "Provider: [#{provider.name}] is a [#{provider.type}]\n"
+              value += "Provider: [#{provider.name}] is a [#{provider.type}]"
               case provider.type
               when 'ManageIQ::Providers::Redhat::InfraManager'
+                value += "\n"
                 value += "\tHosts:      >0 tagged? [" + (provider.hosts.any? { |h| h.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tDatastores: >0 tagged? [" + (provider.storages.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tCluster:    >0 tagged? [" + (provider.ems_clusters.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - ERROR - RHV needs tagged clusters') + "]\n"
+                value += "\t" + getTemplateTagsForProvider(provider) + "\n"
               when 'ManageIQ::Providers::Vmware::InfraManager'
+                value += "\n"
                 value += "\tHosts:      >0 tagged? [" + (provider.hosts.any? { |h| h.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tDatastores: >0 tagged? [" + (provider.storages.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tCluster:    >0 tagged? [" + (provider.ems_clusters.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - WARNING - If DRS, tags needed') + "]\n"
+                value += "\t" + getTemplateTagsForProvider(provider) + "\n"
               else
-                value += "\tNo sanity check implemented\n"
+                value += "\tNo sanity check implemented"
               end
               value += "\n"
             end
+
 
 
             @handle.object['value'] = value
@@ -69,6 +74,26 @@ module RhcMiqQuickstart
             log(:info, "@handle.object['value']: #{@handle.object['valuee'].inspect}")
 
             log(:info, 'Finishing ' + self.class.to_s + '.' + __method__.to_s)
+          end
+
+          def getTemplateTagsForProvider(ext_management_system)
+            desired_tags = %w(os prov_scope env)
+            dt_results = {}
+            @handle.vmdb(:vm_or_template).where(template: true, ext_management_system: ext_management_system.id).each do |tmpl|
+              desired_tags.each do |dt|
+                if tmpl.tags(dt).size> 0
+                  dt_results[dt] = 0 if dt_results[dt].nil?
+                  dt_results[dt] += 1
+                end
+              end
+            end
+            msg = "Template tagging "
+            desired_tags.each do |dt|
+              msg += "with #{dt}: [#{dt_results[dt]}] "
+            end
+
+            return msg
+
           end
 
         end

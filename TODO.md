@@ -8,3 +8,7 @@
   
 # Logging
 * Consider a central place to configure @DEBUG, filtered by class?  
+
+# Settings
+* Consider providing a way to override settings (for an entire VM provisioning run)
+  from a dialog.
