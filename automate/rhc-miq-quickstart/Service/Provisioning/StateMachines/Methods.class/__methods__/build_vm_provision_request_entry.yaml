@@ -14,8 +14,7 @@ object:
     - "/Common/FlavorConfig/flavorconfig"
     - "/StdLib/Settings/Settings"
     - "/rhc-miq-quickstart/Service/Provisioning/StateMachines/Methods/build_vm_provision_request_code"
-    - "/Common/Helpers/VlanHelpers"
-    - "/Common/Helpers/TemplateHelpers"
+    - "/rhc-miq-quickstart/Common/Helpers/HelpersInclude"
     - "/Infrastructure/VM/RedHat/Utils"
     options: {}
   inputs: []

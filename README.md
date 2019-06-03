@@ -14,6 +14,7 @@ expand out to finding templates by any tag alignment desired.
 
 Supports single SC items deploying to different providers (if not a great idea).
 
+Flavors (for on-prem providers, and mapping to Cloud) are configured in a single location.
 
 # Requirements
 This has been "tested" against CloudForms 4.7.
@@ -101,40 +102,52 @@ require some care and feeding. I highly recommend playing with this in a home la
 At this point, you should be able to _attempt_ to provision VMs with the provided dialog, to see what further
 configuration is required.
 
-# Setup & Configuration
+# Design Walkthrough
 
-The basic CF VM Deployment process is unchanged, and is often described as "create provision request" 
-(from the $evm.execute method name) or "build vm provision request" or "ramrexx" method, from the
- CF method name of the main monstrosity, and github username of Kevin Morey. 
+The basic CF Service/VM provision process is unchanged, but rather than bundles, this uses  what is described as 
+"create provision request" (from the $evm.execute method name) or "build vm provision request" or "ramrexx" method, 
+from the CF method name of the main monstrosity, and github username of Kevin Morey. 
 
-Morey original logic flow was to front load the decision making; A wide range dialogs can be quite robust, 
-and all feed into the same entry point (build_vm_provision_request), which is heavily customized to local 
+Morey's original logic flow was to front load the decision making; A wide range dialogs can be quite robust, 
+and all feed into the same entry point (build_vm_provision_request), which was heavily customized to local 
 business logic, and VM (actually, tiers of identical VMs) provisioned through 
 `$evm.execute('create provision request')`. The actual VM state machine and methods can remain relatively
 untouched. Yes, there is still VM placement logic, but the user, the dialog, and bVmPr decided the VM 
 was "production" (a business decision); the placement method only finds a technically suitable production
 host/cluster/datastore/vlan.
 
-This projects main goal is to have functional abstract code, which is controlled through configuration, 
-not more code.
+This project expands on that flow, providing extensive mechanisms to both configure bVmPr, and to extend it, with
+no changes to the core code. As there are central locations for generic settings, and flavors, as well as shared code
+ for template lookup, this provides exact alignment of functionality in the UI and at actual provisioning, and 
+ reduces administrative and development overhead in maintaining consistency.
 
-Currently, the "template finding" logic has been so updated, and the VLAN selection logic is in progress.
+'Flavors' are configured in one place, in a simple Ruby hash. Manual mapping to cloud flavors is supported, but
+of questionable value.
 
-The provided example Service Dialogs and Catalog Items either provision based on hand selecting a template, 
-or selecting some tags, with the template being searched for. (There is a TODO to reconcile the dropdown 
-code with the bVmPr code so these can not be different, right now they have widely different 
-implementations.)
-
+The provided example Service Dialogs and Catalog Items selecting some tags, with the template being searched for, or 
+based on selecting a template from a dropdown. The dropdown is wired into the same the "Template matching" code, 
+used in bVmPr. 
 
 ## Template Lookup
 
-Ultimately, a template is the key object to be provisioned. A template is selected either
-directly in a dialog, or logically in bVmPr. The processing logic in b_vm_p_r is to take all templates
-and pass them through a "match chain" to end up with (ideally) one template. If there is more than one, 
-one is randomly selected from whatever is left.
+With a dropdown in the SD, the UI will display as many templates for manual selection as tag selection and code provides. 
 
-Actually, even if a template is manually selected by the user in the UI, it still goes through the 
-"match chain". 
+With a dropdown selection made, or a template otherwise made in, e.g. a hidden field, bVmPr will use that directly 
+selected template.
+
+If a selection of a dialog is not provided to bVmPr, it will run the match logic again, and if multiple templates are 
+found, select one randomly. This may be wholly inappropriate, or a reasonable strategy for balancing "close enough" 
+templates across providers, coincidentally, without any extra logic.
+
+The "match chain" logic can easily be expanded, without any changes to the core framework.
+ 
+A production install would not likely provide a user with a bunch of tag choice, and a drop down, but that instant 
+visual feedback to an administrator,  tweaking configuration or tags, is invaluable.
+
+The "match chain" is a configurable, ordered list, of methods to run. These are configure as _module_ methods in
+RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::TemplateHelpers that match a particular method
+definition. This (Ruby) module can be extended using Embedded Methods, without changing (or even copying) the core 
+project code.
 
 ### Template Match Chain Implementations
 
@@ -154,20 +167,24 @@ provider based on datacenter, for example, without having to manually tag every 
 
 ## VLAN Lookup Logic
 
-Configure `network_lookup_strategy` to be `simple` or `manualbytag`. 
+VLAN placement is also implemented in an extendable fashion, conceptually similar to the template matching.
+
+The configuration key `network_lookup_strategy` can be`simple` or `manualbytag`. 
 
 ### simple
 `simple` is dead simple, and sets the "network name" to the value of `network_lookup_simple`. 
 
 ### "Network Name" 
-"Neetwork Name" is a relative concept. For RHV this is a vNIC Profile Name. Otherwise, the usual CloudForms 
-hilarious "rules" apply, I'd expect DVS networks to need dvs_ prepended, etc.
+"Network Name" is a relative concept. For RHV this is a vNIC Profile Name. I assume for other providers, the usual 
+CloudForms  hilarious "rules" apply: I'd expect DVS networks to need dvs_ prepended, etc.
 
 ### manualbytag
 
-From the VMs tags, directly place VMs into suitable networks, via a configured naming convention for settings
-keys. This does not require the existing network names to conform to any standard (if they do, I would suggest
-a custom lookup method.) 
+Using the new VMs tags, directly place VMs into suitable networks, via a configured naming convention for settings
+keys. This does not require the actual network names to conform to any standard, only the custom setting key names.
+
+If the actual network names conform to some standard, a custom lookup method could be written. But for a PoC, aggressive
+cut/paste could be faster.	
 
 This has the downside of needing to a lot of mostly duplicate configuration lines, but zero programming.
 

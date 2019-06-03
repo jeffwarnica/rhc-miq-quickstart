@@ -1,0 +1,16 @@
+---
+object_type: method
+version: 1.0
+object:
+  attributes:
+    name: HelpersInclude
+    display_name: 
+    description: 
+    scope: instance
+    language: ruby
+    location: inline
+    embedded_methods:
+      - "/rhc-miq-quickstart/Common/Helpers/VlanHelpers"
+      - "/rhc-miq-quickstart/Common/Helpers/TemplateHelpers"
+    options: {}
+  inputs: []
