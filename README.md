@@ -3,6 +3,18 @@
 This is a collection of automate code and dialogs to quickly get up
 a useful CloudForms (ManageIQ) setup.
 
+# Features
+
+A selection of functional Service Dialogs, and all associated drop down helpers.
+
+Configuration for common tasks. No coding.
+
+OOTB, deploy by OS & Environment, Template, placed into config driven VLAN. Easily
+expand out to finding templates by any tag alignment desired.
+
+Supports single SC items deploying to different providers (if not a great idea).
+
+
 # Requirements
 This has been "tested" against CloudForms 4.7.
 

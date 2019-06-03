@@ -86,13 +86,12 @@ module RhcMiqQuickstart
 
             network_lookup_manualbytags_keys: %w(@vendor @ems environment),
 
-            #NOTE: Put these in global: or a region
-            #network_lookup_manualbytags_lookup_XXXXX: 'my_vlan',
-
+            #(Actual lookup keys are below in `default)
 
             # triggers prov.set_option(:vm_auto_start, [false, 0]) if true.
-            # Helpful for post-provisioning hardware updates (e.g. additional disks)
-            vm_auto_start_suppress: true,
+            # Helpful for post-provisioning hardware updates (e.g. additional disks), and for
+            # business reasons
+            vm_auto_start_suppress: false,
 
 
             # Dynamic Dialog Helper Settings
