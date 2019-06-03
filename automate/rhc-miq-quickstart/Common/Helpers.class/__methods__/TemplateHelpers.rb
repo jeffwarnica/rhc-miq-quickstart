@@ -4,8 +4,23 @@ module RhcMiqQuickstart
       module Provisioning
         module StateMachines
 
+          # Template matching helpers
+          #
+          # Methods here are module methods, matching a particular signature, and named in the format
+          # match_tempate_by_<user defined name>, where <user defined name> us used as a settings option.
+          #
+          # Methods _Must_ match the signature
+          #     [[:req, :caller], [:req, :build], [:req, :templates], [:req, :merged_options_hash], [:req, :merged_tags_hash]]
+          # which with ruby isn't hard.
+          #
+          #   caller is passed as the calling method, to allow access to caller.handle, caller.settings, etc
+          #   build is the build/tier #, probably only useful for logging
+          #   templates is the input array of potential templates
+          #   merged_options_hash  parsed and processed dialog options
+          #   merged_tags_hash     parsed and processed dialog tags
+          #
+          # returns array of templates (presumably a subset of what was passed)
           module TemplateHelpers
-            # Template matching helpers
 
             # Given templates, returns templates
             #   Passed template matches at least one tag value of each of the required tag categories.
@@ -15,7 +30,7 @@ module RhcMiqQuickstart
               @handle.log(:info, "\tmatch_templates_by_align_tags()")
 
               consider_as_tags = caller.settings.get_setting(:global, :template_match_method_align_tags_consider_as_tags, %w[os environment])
-              @handle.log(:info,  "Configured tag categories for filtering: [#{consider_as_tags}]")
+              @handle.log(:info, "Configured tag categories for filtering: [#{consider_as_tags}]")
 
               tags_to_match = {}
               merged_tags_hash.each do |c, v|

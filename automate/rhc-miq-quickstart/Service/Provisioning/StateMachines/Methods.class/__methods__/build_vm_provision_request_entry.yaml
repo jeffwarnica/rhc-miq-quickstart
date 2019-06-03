@@ -16,5 +16,6 @@ object:
     - "/rhc-miq-quickstart/Service/Provisioning/StateMachines/Methods/build_vm_provision_request_code"
     - "/Common/Helpers/VlanHelpers"
     - "/Common/Helpers/TemplateHelpers"
+    - "/Infrastructure/VM/RedHat/Utils"
     options: {}
   inputs: []

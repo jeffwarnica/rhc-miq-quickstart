@@ -97,23 +97,13 @@ module RhcMiqQuickstart
 
             # Dynamic Dialog Helper Settings
 
-            # A list of tag category names that list_template_guids will filter on.
-            #
-            # This would allow a dialog to have tag categories like env: test/dev/prod or os: linux/windows
-            #
-            # In given tier, use , use tag_0_<thingy>, and override with tag_N_<thingy>
-            #
-            # If a given dialog is missing tag_N_<thingy>, that filter is ignored
-            #
-            # @todo: unused??
-            list_template_guid_match_tags: %w(os env),
 
-
+            # An ordered list of 'match helpers', defined in TemplateHelpers.rb
             template_match_methods: %w(align_tags),
 
             # For template_match_method 'align_tags', selects which tags to consider from the dialog
             # when looking up templates.
-            template_match_method_align_tags_consider_as_tags: %w[os environment],
+            template_match_method_align_tags_consider_as_tags: %w[os environment workload],
           },
 
           default: {
