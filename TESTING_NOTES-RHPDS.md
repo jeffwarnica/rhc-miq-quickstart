@@ -10,6 +10,8 @@ newer) for the same reason.
 ## Step by Step Setup
 * Build a "Infrastructure Migration 1.1 GA" or "Migrating from VMware to Red Hat" service
 * Do the basic install per the generic documentation
+* Also import (from the command line) the automate domain in https://github.com/jeffwarnica/rhc-miq-quickstart_local, 
+as a preconfigured starting point for local configuration.
 * Give 'admin' a email address, and/or create additional users (with different tag filters).
 * A ssh.cfg file on your real local workstation can be very helpful. Consider:
     ~~~~
@@ -49,12 +51,8 @@ produce nice log messages telling you in English what messed up.
 ## Things to note, play with, and test
 
 ### Template matching
-The 
 
 ### settings:
-* list_template_guid_match_tags: see comment there
-* template_match_methods: only the one is implemented, but take not it can be
-  overridden
 
 ### build_vm_provision_request
 
@@ -63,14 +61,14 @@ using tags, build a new settings key, and lookup from that a literal value.
 
 Maybe implement a new VlanHelper.
 
-Note the template matching logic. By GUID or Name is as expected, but the chain
-mechanism is new, with align_tags being implemented.
+Explore the template matching logic. The chain matching mechanism is new and quite revolutionary, 
+with align_tags and provider_location being implemented.
 
-Maybe implement a new TemplateHelpers
+Maybe implement a new TemplateHelpers.
 
 ### Placement
 
-The placement critera and order are now configured in settings.rb.
+The placement criteria and order are now configured in settings.rb.
 
-infra_best_fit_with_scope has merged the RHV and VMWare logic. It doesn't
+infra_best_fit_with_scope has merged the RHV and VMWare logic. It doesnt
 explode, but not tested under a loaded system; VMs end up somewhere.

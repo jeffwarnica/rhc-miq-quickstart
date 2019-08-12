@@ -3,8 +3,11 @@
 * Support cloud flavor passthrough(???)
   
 # Template matching
-* list_template_guids should implement the same template logic as BVmPr, implying
-  moving the matching methods from BVmPr to a shared method.
+* Provide additional (lab domain) sample match chain methods
+
+# VLAN matching
+* Expose into SC like Template?
+* Detect if configuration turns up invalid vlan 
   
 # Logging
 * Consider a central place to configure @DEBUG, filtered by class?  

@@ -77,7 +77,7 @@ module RhcMiqQuickstart
           end
 
           def getTemplateTagsForProvider(ext_management_system)
-            desired_tags = %w(os prov_scope env)
+            desired_tags = %w(os prov_scope environment)
             dt_results = {}
             @handle.vmdb(:vm_or_template).where(template: true, ext_management_system: ext_management_system.id).each do |tmpl|
               desired_tags.each do |dt|

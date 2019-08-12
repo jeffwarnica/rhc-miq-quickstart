@@ -49,17 +49,19 @@ require some care and feeding. I highly recommend playing with this in a home la
     * https://github.com/rhtconsulting/miq-Utilities.git
         * Actually: https://github.com/jeffwarnica/miq-Utilities.git with mar21 branch
     * https://github.com/jeffwarnica/rhc-miq-quickstart.git
-  * Create your local, customization Domain for local code and settings
-    * Create a new domain, say "Lab"
-    * Copy from rhc-miq-quickstart the following:
-      * `/StdLib/Settings/settingsstore`
-      	* Here, you will store your local settings.
-		  * Change the class name from "SettingsStorage" to anything else ("SettingsStorageLab", say)
-		  * Change the priority from 0 to, say 100
-      * `/StdLib/Settings/settings`
-      	* Absent a "Automate Class Path Loader", we have to use what we got, so: edit `settings` adding additional embedded methods - all of the settingstores in Automate, essentially
-      	  * Ensure that they are included with the Domain Prefix, as they should live in the same location in their respective domains
-      * `/StdLib/Settings/settingsstore`
+    * From the command line (so it is editable): https://github.com/jeffwarnica/rhc-miq-quickstart_local
+      This provides a framework for local domain, for local changes (settingstore and any additional helpers)
+  * Review that local domain for sample local code and settings
+	* `/StdLib/Settings/settingsstore`
+	  * Here, you will store your local settings.
+	    * Change the class name from "SettingsStorage" to anything else ("SettingsStorageLab", say)
+		* Change the priority from 0 to, say 100
+	  * `/StdLib/Settings/settings`
+    * Absent a "Automate Class Path Loader", we have to use what we got, so: 
+      * `settings` includes additional embedded methods - all of the settingstores in Automate, essentially
+      * ``
+    * Ensure that they are included with the Domain Prefix, as they should live in the same location in their respective domains
+ * `/StdLib/Settings/settingsstore`
   * Configure and wire up "Settings". This involves creating a new Domain, copying some files, and
     providing your own settings.
     * Create a "variables" domain, top priority
@@ -67,7 +69,7 @@ require some care and feeding. I highly recommend playing with this in a home la
     * In settings, configure Embedded Methods, including settingsstore from
       miq-Utilities and rhc-miq-quickstart (including domain prefix!)
     * In settingsstore:
-  * Datstores might look like this: ![like this](Docs/AutomateSetup.png)
+  * Datastores might look like this: ![like this](Docs/AutomateSetup.png)
   * If you plan on making any changes, my convention is to have matching xxx_working domains, just above in priority, 
         to their respective git backed domains.
   * Import the Service Dialogs, Service Catalogs and tags, from this project, with the command line tools:
@@ -80,11 +82,12 @@ require some care and feeding. I highly recommend playing with this in a home la
       * RHV and vSphere each have a RHEL template.
         OS=>Linux
         Prov Scope=>All
-      * The default configuration is going to have dialogs that key on Env, so tag
-        the RHV and vsphere templates to some env, say:
+      * The default configuration is going to have dialogs that key on Environment, so tag
+        the RHV and vsphere templates to some environment, say:
         Environment=>
            rhv->QA
            vmware->prod
+	  * Datastores and hosts and/or clusters should be tagged with at least prov_scope->all
   * You can copy the templates and create a combination with different environments, prov_scope
   env, os , etc, and/or tag some of the templates with '\_any_' as the environment
   Copy those templates with Windows-y names. per above, prov_scope, os, env
