@@ -82,20 +82,16 @@ produce nice log messages telling you in English what messed up.
 
 ### settings:
 * list_template_guid_match_tags: see comment there
-* template_match_methods: only the one is implemented, but take not it can be
-  overridden
+* template_match_methods: `align_tags` makes the most sense, but there is also `provider_location`    
+  See detailed discussion in settingsstore and the actual code.
 
 ### build_vm_provision_request
 
 Note the the VLAN lookup logic. If setting network_lookup_strategy: 'manualbytag',
 using tags, build a new settings key, and lookup from that a literal value.
 
-Maybe implement a new VlanHelper.
-
-Explore the template matching logic. The chain matching mechanism is new and quite revolutionary, 
-with align_tags and provider_location being implemented.
-
-Maybe implement a new TemplateHelpers.
+Maybe implement a new VlanHelper if there is complicated local logic and its worth the effort
+to not juts hard code even a 100 entry list.
 
 ### Placement
 

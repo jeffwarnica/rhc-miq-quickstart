@@ -4,7 +4,7 @@ version: 1.0
 object:
   attributes:
     display_name: 
-    name: list_template_guids
+    name: list_template_guids_tier_3
     inherits: 
     description: 
   fields:

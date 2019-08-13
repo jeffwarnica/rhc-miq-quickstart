@@ -94,22 +94,22 @@ module RhcMiqQuickstart
             vm_auto_start_suppress: false,
 
 
-            # Dynamic Dialog Helper Settings
-
+            # Template matching configuration.
+            #
+            # Use for both Dynamic Dialog Helpers and b_vm_pr processing
+            #
+            # `align_tags`: limits templates to those who have tags that align with the dialog/request
+            #     Note: not all tags. Only consider tags set in `template_match_method_align_tags_consider_as_tags`
+            #
+            # `provider_location` also implemented. Suitable for allowing users to select a
+            # "location", limiting templates to those in an ems tagged with matching 'location'
+            template_match_methods: %w(align_tags),
 
             # For template_match_method 'align_tags', selects which tags to consider from the dialog
             # when looking up templates.
+            # For Dialogs/request that do ont have these tags set, they are simply ignored. That is,
+            # would match all, not match nothing.
             template_match_method_align_tags_consider_as_tags: %w[os environment workload],
-
-            # A list of tag category names that list_template_guids will filter on.
-            #
-            # This would allow a dialog to have tag categories like env: test/dev/prod or os: linux/windows
-            #
-            # In given tier, use , use tag_0_<thingy>, and override with tag_N_<thingy>
-            #
-            # If a given dialog is missing tag_N_<thingy>, that filter is ignored
-            #
-            list_template_guid_match_tags: %w(os env),
 
           },
 
