@@ -369,6 +369,10 @@ module RhcMiqQuickstart
             end
 
 
+            # @todo: Static flavor -> cloud flavor is lacking as a general solutions.
+            #        Works well for basic hand defined tshirt sizes, but exact details of a hand
+            #        defined "Size X" to multiple clouds is ... leaking abstractions all over the place
+            #
             def get_flavor(build, merged_options_hash, merged_tags_hash)
               log(:info, 'Processing get_flavor...', true)
 
@@ -378,10 +382,13 @@ module RhcMiqQuickstart
               flavor = flavors.find { |f| f[:flavor_name] == merged_options_hash[:flavor] }
               error("Unable to locate flavor: [#{merged_options_hash[:flavor]}]") unless flavor
 
+              log(:info, "t.v.d: [#{@template.vendor.downcase}]")
               case @template.vendor.downcase
               when 'openstack', 'amazon'; #@TODO: and whatever the other 'cloud' things are called
+                log(:info, 'Dealing with cloudy template type')
                 cloud_flavor = flavor["cloud_#{@template.vendor.downcase}_flavor]".to_sym]
                 # @todo: sanity check if cloud_flavor exists and give nice error
+                log(:info, "Trying to set :instance_type to: [#{cloud_flavor}]")
                 merged_options_hash[:instance_type] = cloud_flavor
               else
 
