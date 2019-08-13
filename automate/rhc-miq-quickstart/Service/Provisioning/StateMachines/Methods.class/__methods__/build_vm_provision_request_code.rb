@@ -1,8 +1,13 @@
-#  build_vm_provision_request.rb
+#  build_vm_provision_request_code.rb
 
 #  Original Author: Kevin Morey <kevin@redhat.com>
 #  Reduced to more basic functionality by: Jeffrey Cutter <jcutter@redhat.com>
 #  Converted to class format, with heavy extensions: Jeff Warnica <jwarnica@redhat.com> 2018-08-16
+#
+# NOTE: This file (as a CloudForms "method") is not intended to be called directly.
+#       Please use build_vm_provision_request_entry. The design here is that _entry can be copied
+#       to a site specific domain (its minimal code unchanged), and that can be used to embed additional "helpers"
+#
 #
 #  Inputs: dialog_option_[0-9]_guid, dialog_option_[0-9]_flavor, dialog_tag_[0-9]_environment, etc...
 #-------------------------------------------------------------------------------
@@ -224,8 +229,8 @@ module RhcMiqQuickstart
 
               log(:info, "\tAs we still have >1, going to select one basically randomly.") if templates.size > 1
 
-              # get the first template in the list
-              @template = templates.sample(1)
+              # Randomly select 1 template from whatever is still here.
+              @template = templates.sample(1).first
 
               log(:info, "\tBuild: #{build} - template: #{@template.name} guid: #{@template.guid} on provider: #{@template.ext_management_system.name}")
               merged_options_hash[:name] = @template.name
@@ -615,195 +620,9 @@ module RhcMiqQuickstart
               @service.remove_from_vmdb if @service
               exit MIQ_ABORT
             end
-
           end #class
-
-          #HERE BE DEEP MAGIC
-          # Helper methods, optionally used for different filtering tasks
-          #
-          # Note that these are "Module Methods", and they must exist in their respective modules
-          # to be found and used.
-          #
-          # From configuration to core code, these methods are found by convention; there is no registry or anything.
-          #
-          # You can extend the functionality by creating a MIQ "method" which defines additional ruby module methods,
-          # and have the MIQ "method" embed this, stock, build_vm_provision_request; DO NOT ACTUALLY COPY THIS FILE!
-          #
-          # In your local build_vm_provision_request, which then becomes the provisioning entry point,
-          # define only the new helpers methods in the appropriate namespace, matching their names and arguments
-          # according to the obvious pattern. Note the use of the *self.* prefix
-          #
-          #
-          # Ensure your new file still executes BuildVmProvisionRequest.new.main()
-          module VlanHelpers
-
-
-            # VLAN Lookup Strategies
-
-            def self.network_lookup_strategy_simple(caller, merged_options_hash, merged_tags_hash)
-              @handle = caller.handle
-              @handle.log(:info, 'Processing network_lookup_strategy_simple...')
-              caller.settings.get_setting(:global, :network_lookup_simple, {})
-            end
-
-            def self.network_lookup_strategy_manualbytag(caller, merged_options_hash, merged_tags_hash)
-              @handle = caller.handle
-              @handle.log(:info, 'Processing network_lookup_strategy_manualbytag...')
-
-              lookup_extra_keys = caller.settings.get_setting(:global, :network_lookup_manualbytags_keys, {})
-              lookup_key = 'network_lookup_manualbytags_lookup'
-              lookup_extra_keys.each do |k|
-                tag_val = case k
-                          when '@vendor'
-                            caller.template.vendor.downcase
-                          when '@ems'
-                            caller.template.ext_management_system.name.gsub(/\W/, "_").downcase
-                          else
-                            merged_tags_hash[k.to_sym]
-                          end
-                @handle.log(:info, "adding key from [#{k}] which is [#{tag_val}]")
-                lookup_key += "_#{tag_val}"
-              end
-              lookup_key = lookup_key.to_sym
-
-              @handle.log(:info, "Searching for vlan name with key [#{lookup_key}]")
-
-              begin
-                vlan = caller.settings.get_setting(caller.region, lookup_key)
-              rescue => err
-                @handle.log(:info, "ERROR was [#{err}]")
-                error("Generated lookup key [#{lookup_key}] was unable to find a VLAN name")
-              end
-            end
-          end #VlanHelpers
-
-          module TemplateHelpers
-            # Template matching helpers
-
-            #
-            # Template matches _any_ tag category value, and _every_ category
-            def self.match_templates_by_align_tags(caller, build, templates, merged_options_hash, merged_tags_hash)
-
-              @handle = caller.handle
-              @handle.log(:info, '\tmatch_templates_by_align_tags()')
-
-              consider_as_tags = caller.settings.get_setting(caller.region, :consider_as_tags, %w[os environment])
-
-              tags_to_match = {}
-              merged_tags_hash.each do |c, v|
-                @handle.log(:info, "\t\tlooking for tags to consider from merged_tags_hash. does [#{consider_as_tags}].include?([#{c}])")
-                next unless consider_as_tags.map { |x| x.to_sym }.include?(c)
-                tags_to_match[c] = v
-              end
-              merged_options_hash.each do |c, v|
-                @handle.log(:info, "\t\tlooking for tags to consider from merged_options_hash. does [#{consider_as_tags}].include?([#{c}])")
-                next unless consider_as_tags.map { |x| x.to_sym }.include?(c)
-                tags_to_match[c] = v
-              end
-
-              @handle.log(:info, "\t\tConsidering the following 'tag' values: [#{tags_to_match}]")
-
-              template_matching_tag = {}
-              irrelevant_valid_category = ''
-
-              # loop through each tag category, finding, for each category, templates that match
-              tags_to_match.each do |category, values|
-                @handle.log(:info, "\t\t\tChecking templates to find matched with [#{category} -> #{values}]")
-                templates.find_all do |template|
-                  template_matching_tag[category.to_sym] ||= []
-                  next unless Array.wrap(values).find { |value| template.tagged_with?(category, value) }
-                  template_matching_tag[category.to_sym] << template
-                  irrelevant_valid_category = category.to_sym
-                end
-                @handle.log(:info, "\t\t\tGot [#{template_matching_tag[category.to_sym].size}] that match in category: [#{category}]")
-              end
-
-              @handle.log(:info, "\t\tintersecting those ^")
-              # and then find the intersection of those
-              potential_templates = template_matching_tag[irrelevant_valid_category]
-              template_matching_tag.each do |arr_of_templates|
-                potential_templates &= arr_of_templates
-              end
-              @handle.log(:info, "\tmatch_templates_by_align_tags returning [#{potential_templates.size}] templates")
-              potential_templates
-            end
-
-
-            ##
-            # Filters out templates whose provider does not match the location tag
-            # e.g. for deployment by template name into a particular provider, where the templates are "the same"
-            # across multiple providers
-
-            def self.match_templates_by_provider_location(caller, build, templates, merged_options_hash, merged_tags_hash)
-              @handle = caller.handle
-              @handle.log(:info, '\tmatch_templates_by_provider_location()')
-              error('searching by provider location but no location found in form') unless merged_tags_hash.key?(:location)
-              templates.find_all do |t|
-                t.ext_management_system.tagged_with?('location', merged_tags_hash[:location])
-              end
-            end
-
-            def self.match_templates_by_location(caller, build, templates, merged_options_hash, merged_tags_hash)
-              @handle = caller.handle
-              @handle.log(:info, '\tmatch_templates_by_locaiton()')
-              match_template_by_tag(@handle, build, templates, 'location', merged_tags_hash[:location])
-            end
-
-            def self.match_template_by_tag(caller, build, templates, category, value)
-              @handle = caller.handle
-              @handle.log(:info, "\tmatch_templates_by_tag, [#{category}] has [#{value}]?")
-              templates.find_all do |t|
-                t.tagged_with?(category, value)
-              end
-            end
-          end #TemplateHelpers
-
-
         end
       end
     end
-
   end
-end #module
-
-
-if __FILE__ == $PROGRAM_NAME
-  RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::BuildVmProvisionRequest.new.main()
 end
-
-#################################
-#
-# SAMPLE (untested!) extension to live at <foocorp>/Service/Provisioning/StateMachines/Methods.class/__methods__/build_vm_provision_request.rb
-#
-# module RhcMiqQuickstart
-#   module Automate
-#     module Service
-#       module Provisioning
-#         module StateMachines
-#           module VlanHelpers
-#             def self.network_lookup_strategy_foo(caller, merged_options_hash, merged_tags_hash)
-#               @handle = caller.handle
-#               @handle.log(:info, 'Processing network_lookup_strategy_foo...', true)
-#               #stuff here
-#             end
-#           end
-#
-#           module TemplateHelpers
-#             def self.match_templates_by_random(caller, templates, merged_options_hash, merged_tags_hash)
-#               @handle = caller.handle
-#               @handle.log(:info, 'match_templates_by_random()')
-#               return templates.find_all do |t|
-#                 [true, false].sample
-#               end
-#             end
-#           end
-#
-#         end
-#       end
-#     end
-#   end
-# end
-#
-# if __FILE__ == $PROGRAM_NAME
-#   RhcMiqQuickstart::Automate::Service::Provisioning::StateMachines::BuildVmProvisionRequest.new.main()
-# end

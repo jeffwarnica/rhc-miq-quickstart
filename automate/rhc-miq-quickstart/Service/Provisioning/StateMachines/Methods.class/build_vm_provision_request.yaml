@@ -9,4 +9,4 @@ object:
     description: 
   fields:
   - execute:
-      value: build_vm_provision_request
+      value: build_vm_provision_request_entry

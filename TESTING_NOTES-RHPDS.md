@@ -1,13 +1,20 @@
-# RHPDS Testing Notes
+<<<<<<< HEAD
+# RHPDS Testing & Evaluation Notes
 
 RHPDS can be used to test and evaluate this. There is not a service with
-this in place, obviously, but can be installed into one of services provided.
+this pre-installed place, obviously, but can be installed into one of services provided within a few minutes.
 
 "Infrastructure Migration 1.1 GA" is suitable, as it contains 3 providers:
-VMWare, RHV and OpenStack.
+VMWare, RHV and OpenStack., "Migrating from VMware to Red Hat" may also be suitable (and
+newer) for the same reason.
 
-* Build a "Infrastructure Migration 1.1 GA" service
-* An ssh.cfg file can be very helpful. Consider:
+## Step by Step Setup
+* Build a "Infrastructure Migration 1.1 GA" or "Migrating from VMware to Red Hat" service
+* Do the basic install per the generic documentation
+* Also import (from the command line) the automate domain in https://github.com/jeffwarnica/rhc-miq-quickstart_local, 
+as a preconfigured starting point for local configuration.
+* Give 'admin' a email address, and/or create additional users (with different tag filters).
+* A ssh.cfg file on your real local workstation can be very helpful. Consider:
     ~~~~
     Host workstation-<uid>.rhpds.opentlc.com
       Hostname workstation-<uid>.rhpds.opentlc.com
@@ -66,10 +73,12 @@ VMWare, RHV and OpenStack.
 # Provision some things!
 
 Assuming neither of us screwed up writing or following the above, the SC items
-"Generic VM From Env and OS" and "Generic VM From Template" should work.  Or
+"Generic VM From Env and OS" and "Generic VM From Template" should work. Or
 produce nice log messages telling you in English what messed up.
 
 ## Things to note, play with, and test
+
+### Template matching
 
 ### settings:
 * list_template_guid_match_tags: see comment there
@@ -83,14 +92,14 @@ using tags, build a new settings key, and lookup from that a literal value.
 
 Maybe implement a new VlanHelper.
 
-Note the template matching logic. By GUID or Name is as expected, but the chain
-mechanism is new, with align_tags being implemented.
+Explore the template matching logic. The chain matching mechanism is new and quite revolutionary, 
+with align_tags and provider_location being implemented.
 
-Maybe implement a new TemplateHelpers
+Maybe implement a new TemplateHelpers.
 
 ### Placement
 
-The placement critera and order are now configured in settings.rb.
+The placement criteria and order are now configured in settingsstore.
 
-infra_best_fit_with_scope has merged the RHV and VMWare logic. It doesn't
-explode, but not tested under a loaded system; VMs end up somewhere.
+infra_best_fit_with_scope has merged the RHV and VMWare logic. It doesnt
+explode, but not tested under a loaded system; VMs do end up somewhere.

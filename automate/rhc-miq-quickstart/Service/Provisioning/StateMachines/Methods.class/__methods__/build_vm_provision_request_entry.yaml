@@ -3,7 +3,7 @@ object_type: method
 version: 1.0
 object:
   attributes:
-    name: list_template_guids
+    name: build_vm_provision_request_entry
     display_name: 
     description: 
     scope: instance
@@ -13,6 +13,8 @@ object:
     - "/StdLib/Core/Core"
     - "/Common/FlavorConfig/flavorconfig"
     - "/StdLib/Settings/Settings"
-    - "/Common/Helpers/TemplateHelpers"
+    - "/rhc-miq-quickstart/Service/Provisioning/StateMachines/Methods/build_vm_provision_request_code"
+    - "/rhc-miq-quickstart/Common/Helpers/HelpersInclude"
+    - "/Infrastructure/VM/RedHat/Utils"
     options: {}
   inputs: []

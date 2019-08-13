@@ -45,6 +45,7 @@ module RhcMiqQuickstart
             network_lookup_strategy: 'manualbytag',
 
             # simple is dead simple. Set the "network name"
+            # For RHV, this is actally the "vNIC Profile Name"
             network_lookup_simple: 'ovirtmgmt',
 
             # ordered list of CF tag category names to use to create the vlan settings key
@@ -81,20 +82,24 @@ module RhcMiqQuickstart
             #         network_lookup_manualbytags_lookup_extra_c00l_vspher__silver_nyc_dev: 'dvs_131_nyc',
             #         network_lookup_manualbytags_lookup_extra_c00l_vspher__silver_nyc_dev: 'dvs_131_nyc',
             #         network_lookup_manualbytags_lookup_extra_c00l_vspher__bronze_nyc_dev: 'dvs_nyc_old_10bT',
-            #   (note the double __ as é --> _ + the separator)
+            #   (note the double __ as é --> _ , and also an extra _ as the normal separator)
 
             network_lookup_manualbytags_keys: %w(@vendor @ems environment),
 
-            #NOTE: Put these in global: or a region
-            #network_lookup_manualbytags_lookup_XXXXX: 'my_vlan',
-
+            #(Actual lookup keys are below in `default)
 
             # triggers prov.set_option(:vm_auto_start, [false, 0]) if true.
-            # Helpful for post-provisioning hardware updates (e.g. additional disks)
-            vm_auto_start_suppress: true,
+            # Helpful for post-provisioning hardware updates (e.g. additional disks), and for
+            # business reasons
+            vm_auto_start_suppress: false,
 
 
             # Dynamic Dialog Helper Settings
+
+
+            # For template_match_method 'align_tags', selects which tags to consider from the dialog
+            # when looking up templates.
+            template_match_method_align_tags_consider_as_tags: %w[os environment workload],
 
             # A list of tag category names that list_template_guids will filter on.
             #
@@ -106,8 +111,6 @@ module RhcMiqQuickstart
             #
             list_template_guid_match_tags: %w(os env),
 
-
-            template_match_methods: %w(align_tags),
           },
 
           default: {
