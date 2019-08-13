@@ -387,10 +387,18 @@ module RhcMiqQuickstart
               when 'openstack', 'amazon'; #@TODO: and whatever the other 'cloud' things are called
                 log(:info, 'Dealing with cloudy template type')
                 key = "cloud_#{@template.vendor.downcase}_flavor"
-                cloud_flavor = flavor[key.to_sym]
+                cloud_flavor_name = flavor[key.to_sym]
                 # @todo: sanity check if cloud_flavor exists and give nice error
-                log(:info, "Trying to set :instance_type from key: [#{key}] to: [#{cloud_flavor}]")
-                merged_options_hash[:instance_type] = cloud_flavor
+                log(:info, "Trying to get cloud_flavor from key: [#{key}], which is: [#{cloud_flavor_name}]")
+
+                cloud_flavor = @template.ext_management_system.flavors.detect{|fl| fl.name.downcase == cloud_flavor_name}
+                if cloud_flavor.nil?
+                  log(:warn, "Unable to match cloud_flavor [#{cloud_flavor_name}] to flavor on provider: [#{@template.ext_management_system.name}]")
+                else
+                  log(:info, "Setting instance_type to id: [#{cloud_flavor.id}]")
+                end
+                
+                merged_options_hash[:instance_type] = cloud_flavor.id
               else
 
                 [:number_of_sockets, :cores_per_socket, :vm_memory].each do |sym|
