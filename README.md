@@ -17,12 +17,15 @@ Supports single SC items deploying to different providers (if not a great idea).
 Flavors (for on-prem providers, and mapping to Cloud) are configured in a single location.
 
 # Requirements
-This has been "tested" against CloudForms 4.7.
+This has been "tested" against CloudForms 4.7 and 5.0.
+
+5.0 is recommended.
 
 This requires at least the automate part of
 https://github.com/RedHatOfficial/miq-Utilities
 
-(Actually, https://github.com/jeffwarnica/miq-Utilities/tree/mar21 )
+
+(Actually, https://github.com/jeffwarnica/miq-Utilities/tree/mar21)
 
 
 # Quickstart and Demo
