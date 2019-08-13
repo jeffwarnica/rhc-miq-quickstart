@@ -386,9 +386,10 @@ module RhcMiqQuickstart
               case @template.vendor.downcase
               when 'openstack', 'amazon'; #@TODO: and whatever the other 'cloud' things are called
                 log(:info, 'Dealing with cloudy template type')
-                cloud_flavor = flavor["cloud_#{@template.vendor.downcase}_flavor]".to_sym]
+                key = "cloud_#{@template.vendor.downcase}_flavor"
+                cloud_flavor = flavor[key.to_sym]
                 # @todo: sanity check if cloud_flavor exists and give nice error
-                log(:info, "Trying to set :instance_type to: [#{cloud_flavor}]")
+                log(:info, "Trying to set :instance_type from key: [#{key}] to: [#{cloud_flavor}]")
                 merged_options_hash[:instance_type] = cloud_flavor
               else
 
