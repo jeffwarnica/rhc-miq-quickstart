@@ -62,7 +62,7 @@ module RhcMiqQuickstart
                 value += "\tCluster:    >0 tagged? [" + (provider.ems_clusters.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - WARNING - If DRS, tags needed') + "]\n"
                 value += "\t" + getTemplateTagsForProvider(provider) + "\n"
               else
-                value += "\tNo sanity check implemented"
+                value += "\tNo sanity check implemented\n"
               end
               value += "\n"
             end

@@ -189,12 +189,20 @@ CloudForms  hilarious "rules" apply: I'd expect DVS networks to need dvs_ prepen
 Using the new VMs tags, directly place VMs into suitable networks, via a configured naming convention for settings
 keys. This does not require the actual network names to conform to any standard, only the custom setting key names.
 
-If the actual network names conform to some standard, a custom lookup method could be written. But for a PoC, aggressive
-cut/paste could be faster.	
+## Setup - TL;dr
 
-This has the downside of needing to a lot of mostly duplicate configuration lines, but zero programming.
+* Recommended: install on an appliance the [miqimport/export scripts](https://github.com/rhtconsulting/cfme-rhconsulting-scripts)
+* Install [miq-Utilities](https://github.com/RedHatOfficial/miq-Utilities), at least the automate part
+* Install this project
+* Update 'settings.rb' to include other settingsstore's
+  * Create or reusing a high-priority 'variables' domain:
+  * Copy RedHatConsulting_Utilities/StdLib/Settings/settings into the variables domain
+  * Copy rhc-miq-quickstart/StdLib/Settings/settingsstore into the variable domain
+    * Update the Module name & set PRIORITY to a high number
+* Import the Service Dialogs and Service Catalog from the command line
 
-Details are in settingsstore.rb.
+* Review "Admin Sanity Check" SC : the dynamic text output should help guiding
+  additional tagging and other configuration you need to do.
 
 
 # Design Philosophy and Goals 
@@ -212,8 +220,10 @@ in the core product.
 * Maintaining functionality is more important than chasing shiny.
 * Longer, more complex, but _configurable_ methods are favoured over multiple drop 
   in replacement implementations.
-
-
+* Using gratuitous amounts of log messages (at DEBUG or not) for onging
+  debugging and code documentation purposes
+* Especially print human readable error messages, if possible, with fix
+  suggestions (eg "did you tag?")
 
 # Features
 
@@ -230,6 +240,7 @@ type, rather then the built in concept of service bundles.
 
 The puts most of the logic up front, into the service catalog dialog (and dynamic
 dialog helpers), and then build_vm_provision_request.rb.
+
 
 ## Configuration in one place, over code editing
 

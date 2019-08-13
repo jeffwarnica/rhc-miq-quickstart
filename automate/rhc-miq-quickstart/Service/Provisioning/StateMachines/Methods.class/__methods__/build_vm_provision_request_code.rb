@@ -620,11 +620,9 @@ module RhcMiqQuickstart
               @service.remove_from_vmdb if @service
               exit MIQ_ABORT
             end
-
           end #class
         end
       end
     end
   end
-end #module
-
+end
