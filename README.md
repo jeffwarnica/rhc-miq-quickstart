@@ -12,6 +12,12 @@ Configuration for common tasks. No coding.
 OOTB, deploy by OS & Environment, Template, placed into config driven VLAN. Easily
 expand out to finding templates by any tag alignment desired.
 
+Automate code designed to be _extended_ not overwritten. Specifically, 
+template & vlan finding code is hightly _configurable_ and _expandable_.
+
+Magic undocumented "`any`" tag to allow single value tags categories to be useful: e.g. tag
+a template as `environment`->`_any_`
+
 Supports single SC items deploying to different providers (if not a great idea).
 
 Flavors (for on-prem providers, and mapping to Cloud) are configured in a single location.

@@ -378,9 +378,18 @@ module RhcMiqQuickstart
               flavor = flavors.find { |f| f[:flavor_name] == merged_options_hash[:flavor] }
               error("Unable to locate flavor: [#{merged_options_hash[:flavor]}]") unless flavor
 
-              [:number_of_sockets, :cores_per_socket, :vm_memory].each do |sym|
-                merged_options_hash[sym] = flavor[sym]
+              case @template.vendor.downcase
+              when 'openstack', 'amazon'; #@TODO: and whatever the other 'cloud' things are called
+                cloud_flavor = flavor["cloud_#{@template.vendor.downcase}_flavor]".to_sym]
+                # @todo: sanity check if cloud_flavor exists and give nice error
+                merged_options_hash[:instance_type] = cloud_flavor
+              else
+
+                [:number_of_sockets, :cores_per_socket, :vm_memory].each do |sym|
+                  merged_options_hash[sym] = flavor[sym]
+                end
               end
+
 
               if flavor.has_key?(:disks)
                 log(:info, 'adding disks from flavor config')
