@@ -296,7 +296,7 @@ module RhcMiqQuickstart
             end
 
             def get_vm_name(build, merged_options_hash, merged_tags_hash)
-              log(:info, 'Procesprovision_typesing get_vm_name', true)
+              log(:info, 'Processing get_vm_name', true)
               new_vm_name = merged_options_hash[:vm_name] || merged_options_hash[:vm_target_name] || 'changeme'
               proposed_vm_name = nil
               if new_vm_name.include?('*')
