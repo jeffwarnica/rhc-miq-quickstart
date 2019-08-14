@@ -362,7 +362,7 @@ module RhcMiqQuickstart
                 log(:info, "\tsetting vlan to: [#{vlan}]")
                 merged_options_hash[:vlan] = vlan
               when 'openstack'
-                cloud_network = ems.cloud_networks.detect { |cn| cn.name == vlan] }
+                cloud_network = ems.cloud_networks.detect { |cn| cn.name == vlan }
                 log(:info, "vlan: [#{vlan}] is id: [#{cloud_network.id}]")
                 merged_options_hash[:cloud_network] = cloud_network.id
                 merged_options_hash[:cloud_network_id] = cloud_network.id
