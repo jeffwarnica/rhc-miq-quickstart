@@ -68,7 +68,7 @@ module RhcMiqQuickstart
                 value += "\tCloud Networks:     >0 tagged? [" + (provider.cloud_networks.any? { |cn| cn.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tSecurity Groups:    >0 tagged? [" + (provider.security_groups.any? { |sg| sg.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tFlavors:            >0 tagged? [" + (provider.flavors.any? { |f| f.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
-                value += "\tKey Pairs:          >0 tagged? [" + (provider.loud_networks.any? { |cn| cn.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\tKey Pairs:          >0 tagged? [" + (provider.key_pairs.any? { |kp| kp.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\t" + getTemplateTagsForProvider(provider) + "\n"
               else
                 value += "\tNo sanity check implemented\n"
