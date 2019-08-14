@@ -349,22 +349,31 @@ module RhcMiqQuickstart
               end
 
               vlan = m.call(self, merged_options_hash, merged_tags_hash)
+              ems = @template.ext_management_system
 
               case @template.vendor.downcase
+              when 'vmware' # Nothing special
+                log(:info, "\tsetting vlan to: [#{vlan}]")
+                merged_options_hash[:vlan] = vlan
               when 'redhat'
                 vnic_profile_id = Automation::Infrastructure::VM::RedHat::Utils.new(@template.ext_management_system).vnic_profile_id(vlan)
                 log(:info, "RHV takes a vnic_profile_id => #{vnic_profile_id}") if @DEBUG
                 vlan = vnic_profile_id
+                log(:info, "\tsetting vlan to: [#{vlan}]")
+                merged_options_hash[:vlan] = vlan
+              when 'openstack'
+                cloud_network = ems.cloud_networks.detect { |cn| cn.name == vlan] }
+                log(:info, "vlan: [#{vlan}] is id: [#{cloud_network.id}]")
+                merged_options_hash[:cloud_network] = cloud_network.id
+                merged_options_hash[:cloud_network_id] = cloud_network.id
               end
 
-              log(:info, "\tsetting vlan to: [#{vlan}]")
-              merged_options_hash[:vlan] = vlan
 
               # @TODO: Sanity check the vlan exists in the templates provider, at least.
               #       At least we can make sure that create_provision_request doesn't barf
 
 
-              log(:info, "Build: #{build} - vlan: #{merged_options_hash[:vlan]}")
+              log(:info, "Build: [#{build}] - vlan: [#{merged_options_hash[:vlan]}], cloud_network: [#{merged_options_hash[:cloud_network]}]")
               log(:info, 'Processing get_network...Complete', true)
             end
 
@@ -391,13 +400,13 @@ module RhcMiqQuickstart
                 # @todo: sanity check if cloud_flavor exists and give nice error
                 log(:info, "Trying to get cloud_flavor from key: [#{key}], which is: [#{cloud_flavor_name}]")
 
-                cloud_flavor = @template.ext_management_system.flavors.detect{|fl| fl.name.downcase == cloud_flavor_name}
+                cloud_flavor = @template.ext_management_system.flavors.detect { |fl| fl.name.downcase == cloud_flavor_name }
                 if cloud_flavor.nil?
                   log(:warn, "Unable to match cloud_flavor [#{cloud_flavor_name}] to flavor on provider: [#{@template.ext_management_system.name}]")
                 else
                   log(:info, "Setting instance_type to id: [#{cloud_flavor.id}]")
                 end
-                
+
                 merged_options_hash[:instance_type] = cloud_flavor.id
               else
 
