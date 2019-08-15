@@ -16,6 +16,10 @@
 * Some way to override settings (for an entire VM provisioning run)
   from a dialog.
   
+# Cloud
+
+* add_vm_to_service
+  
 # More
 
 * Cost estimate? Move this to a dynamic textbox in the dialog. 
