@@ -1,6 +1,6 @@
 ---
-- description: Demonstrates a 3 tier service, where we provide a service tag (environment),
-    which can be overridden by the tier.
+- description: Demonstrates a 3 tier service, where we provide two service tags (environment, os),
+    where the OS can be overridden by the tier.
   buttons: submit,cancel
   label: RHC_3tier_bvmpr_based_on_env_and_os
   dialog_tabs:

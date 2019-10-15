@@ -61,6 +61,15 @@ module RhcMiqQuickstart
                 value += "\tDatastores: >0 tagged? [" + (provider.storages.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
                 value += "\tCluster:    >0 tagged? [" + (provider.ems_clusters.any? { |s| s.tags.size > 0 } ? 'yes' : 'no - WARNING - If DRS, tags needed') + "]\n"
                 value += "\t" + getTemplateTagsForProvider(provider) + "\n"
+              when 'ManageIQ::Providers::Openstack::CloudManager'
+                value += "\n"
+                value += "\tTenants:            >0 tagged? [" + (provider.cloud_tenants.any? { |t| t.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\tAvailability Zones: >0 tagged? [" + (provider.availability_zones.any? { |az| az.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\tCloud Networks:     >0 tagged? [" + (provider.cloud_networks.any? { |cn| cn.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\tSecurity Groups:    >0 tagged? [" + (provider.security_groups.any? { |sg| sg.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\tFlavors:            >0 tagged? [" + (provider.flavors.any? { |f| f.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\tKey Pairs:          >0 tagged? [" + (provider.key_pairs.any? { |kp| kp.tags.size > 0 } ? 'yes' : 'no - ERROR') + "]\n"
+                value += "\t" + getTemplateTagsForProvider(provider) + "\n"
               else
                 value += "\tNo sanity check implemented\n"
               end

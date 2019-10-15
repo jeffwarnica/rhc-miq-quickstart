@@ -12,6 +12,12 @@ Configuration for common tasks. No coding.
 OOTB, deploy by OS & Environment, Template, placed into config driven VLAN. Easily
 expand out to finding templates by any tag alignment desired.
 
+Automate code designed to be _extended_ not overwritten. Specifically, 
+template & vlan finding code is hightly _configurable_ and _expandable_.
+
+Magic undocumented "`any`" tag to allow single value tags categories to be useful: e.g. tag
+a template as `environment`->`_any_`
+
 Supports single SC items deploying to different providers (if not a great idea).
 
 Flavors (for on-prem providers, and mapping to Cloud) are configured in a single location.
@@ -23,9 +29,6 @@ This has been "tested" against CloudForms 4.7 and 5.0.
 
 This requires at least the automate part of
 https://github.com/RedHatOfficial/miq-Utilities
-
-
-(Actually, https://github.com/jeffwarnica/miq-Utilities/tree/mar21)
 
 
 # Quickstart and Demo
@@ -50,7 +53,6 @@ require some care and feeding. I highly recommend playing with this in a home la
   * Enable 'Git Repositories Owner' role, if necessary.
   * Import GIT Automate repositories:
     * https://github.com/rhtconsulting/miq-Utilities.git
-        * Actually: https://github.com/jeffwarnica/miq-Utilities.git with mar21 branch
     * https://github.com/jeffwarnica/rhc-miq-quickstart.git
     * From the command line (so it is editable): https://github.com/jeffwarnica/rhc-miq-quickstart_local
       This provides a framework for local domain, for local changes (settingstore and any additional helpers)

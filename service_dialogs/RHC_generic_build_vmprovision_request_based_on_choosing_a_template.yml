@@ -1,5 +1,11 @@
 ---
-- description: 
+- description: "This is a sample dialog to demonstrate building a single tier service.
+    \n\nThe template is manually selected, however the selection list is limited by
+    the selected Environment tag in the service.\n\nNote that on submission, a template
+    GUID is provided to Automate. Tags _are_ reevaluated, but start with a set of
+    1 possible template, the one hand selected.\n\nThis dialog can be expanded to
+    have additional tags on the service (tag_0_xxxx) or VM layer (tag_1_xxx) to further
+    influence the drop down limiting."
   buttons: submit,cancel
   label: RHC_generic_build_vmprovision_request_based_on_choosing_a_template
   dialog_tabs:
@@ -19,7 +25,6 @@
       dialog_fields:
       - name: service_name
         description: 
-        type: DialogFieldTextBox
         data_type: 
         notes: 
         notes_display: 
@@ -35,18 +40,21 @@
         values_method_options: {}
         options:
           :protected: false
+          :show_past_days: false
+          :force_multi_value: false
         label: Service Name
         position: 0
         validator_type: 
         validator_rule: 
         reconfigurable: false
         dynamic: false
-        show_refresh_button: 
-        load_values_on_init: 
+        show_refresh_button: false
+        load_values_on_init: true
         read_only: false
         auto_refresh: 
         trigger_auto_refresh: 
         visible: true
+        type: DialogFieldTextBox
         resource_action:
           action: 
           resource_type: DialogField
@@ -58,7 +66,6 @@
         dialog_field_responders: []
       - name: tag_0_environment
         description: 
-        type: DialogFieldRadioButton
         data_type: string
         notes: 
         notes_display: 
@@ -83,18 +90,22 @@
         options:
           :sort_by: description
           :sort_order: ascending
+          :show_past_days: false
+          :protected: false
+          :force_multi_value: false
         label: Environment *
         position: 1
         validator_type: 
         validator_rule: 
         reconfigurable: false
         dynamic: false
-        show_refresh_button: 
-        load_values_on_init: 
+        show_refresh_button: false
+        load_values_on_init: true
         read_only: false
         auto_refresh: 
         trigger_auto_refresh: 
         visible: true
+        type: DialogFieldRadioButton
         resource_action:
           action: 
           resource_type: DialogField
@@ -114,7 +125,6 @@
       dialog_fields:
       - name: option_1_guid
         description: 
-        type: DialogFieldDropDownList
         data_type: string
         notes: 
         notes_display: 
@@ -125,13 +135,14 @@
         required_method: 
         required_method_options: {}
         default_value: 1129ff08-f0d6-49ae-a542-124698b59ea6
-        values: 
         values_method: 
         values_method_options: {}
         options:
           :sort_by: description
           :sort_order: ascending
           :force_multi_value: false
+          :show_past_days: false
+          :protected: false
         label: Template *
         position: 0
         validator_type: 
@@ -144,6 +155,7 @@
         auto_refresh: 
         trigger_auto_refresh: false
         visible: true
+        type: DialogFieldDropDownList
         resource_action:
           action: 
           resource_type: DialogField
@@ -154,9 +166,9 @@
           ae_attributes: {}
         dialog_field_responders:
         - option_1_flavor
+        values: 
       - name: option_1_vm_name
         description: 
-        type: DialogFieldTextBox
         data_type: 
         notes: 
         notes_display: 
@@ -172,18 +184,21 @@
         values_method_options: {}
         options:
           :protected: false
+          :show_past_days: false
+          :force_multi_value: false
         label: VM Name
         position: 1
         validator_type: regex
         validator_rule: "^[a-zA-Z0-9-]{0,12}$"
         reconfigurable: false
         dynamic: false
-        show_refresh_button: 
-        load_values_on_init: 
+        show_refresh_button: false
+        load_values_on_init: true
         read_only: false
         auto_refresh: 
         trigger_auto_refresh: 
         visible: true
+        type: DialogFieldTextBox
         resource_action:
           action: 
           resource_type: DialogField
@@ -195,7 +210,6 @@
         dialog_field_responders: []
       - name: option_1_flavor
         description: 
-        type: DialogFieldDropDownList
         data_type: string
         notes: 
         notes_display: 
@@ -206,13 +220,14 @@
         required_method: 
         required_method_options: {}
         default_value: 01_small
-        values: 
         values_method: 
         values_method_options: {}
         options:
           :sort_by: value
           :sort_order: ascending
           :force_multi_value: false
+          :show_past_days: false
+          :protected: false
         label: Flavor *
         position: 2
         validator_type: 
@@ -220,11 +235,12 @@
         reconfigurable: false
         dynamic: true
         show_refresh_button: false
-        load_values_on_init: 
+        load_values_on_init: true
         read_only: false
         auto_refresh: 
         trigger_auto_refresh: 
         visible: true
+        type: DialogFieldDropDownList
         resource_action:
           action: 
           resource_type: DialogField
@@ -234,9 +250,9 @@
           ae_message: 
           ae_attributes: {}
         dialog_field_responders: []
+        values: 
       - name: option_1_volume_1_size
         description: 
-        type: DialogFieldDropDownList
         data_type: string
         notes: 
         notes_display: 
@@ -248,6 +264,8 @@
         required_method_options: {}
         default_value: '0'
         values:
+        - - 
+          - "<None>"
         - - '10'
           - 10 GB
         - - '20'
@@ -260,18 +278,21 @@
           :sort_by: none
           :sort_order: ascending
           :force_multi_value: false
+          :show_past_days: false
+          :protected: false
         label: Additional Disk
         position: 3
         validator_type: 
         validator_rule: 
         reconfigurable: false
         dynamic: false
-        show_refresh_button: 
-        load_values_on_init: 
-        read_only: 
+        show_refresh_button: false
+        load_values_on_init: true
+        read_only: false
         auto_refresh: 
         trigger_auto_refresh: 
         visible: true
+        type: DialogFieldDropDownList
         resource_action:
           action: 
           resource_type: DialogField
@@ -283,7 +304,6 @@
         dialog_field_responders: []
       - name: option_1_number_of_vms
         description: 
-        type: DialogFieldDropDownList
         data_type: string
         notes: 
         notes_display: 
@@ -305,18 +325,21 @@
           :sort_by: description
           :sort_order: ascending
           :force_multi_value: false
+          :show_past_days: false
+          :protected: false
         label: Number of VMs
         position: 4
         validator_type: 
         validator_rule: 
         reconfigurable: false
         dynamic: false
-        show_refresh_button: 
-        load_values_on_init: 
+        show_refresh_button: false
+        load_values_on_init: true
         read_only: false
         auto_refresh: 
         trigger_auto_refresh: 
         visible: true
+        type: DialogFieldDropDownList
         resource_action:
           action: 
           resource_type: DialogField
@@ -326,3 +349,4 @@
           ae_message: 
           ae_attributes: {}
         dialog_field_responders: []
+  export_version: '5.11'
