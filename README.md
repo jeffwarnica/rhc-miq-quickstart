@@ -31,9 +31,6 @@ This requires at least the automate part of
 https://github.com/RedHatOfficial/miq-Utilities
 
 
-(Actually, https://github.com/jeffwarnica/miq-Utilities/tree/mar21)
-
-
 # Quickstart and Demo
 
 ## Setup - TL;dr
@@ -56,7 +53,6 @@ require some care and feeding. I highly recommend playing with this in a home la
   * Enable 'Git Repositories Owner' role, if necessary.
   * Import GIT Automate repositories:
     * https://github.com/rhtconsulting/miq-Utilities.git
-        * Actually: https://github.com/jeffwarnica/miq-Utilities.git with mar21 branch
     * https://github.com/jeffwarnica/rhc-miq-quickstart.git
     * From the command line (so it is editable): https://github.com/jeffwarnica/rhc-miq-quickstart_local
       This provides a framework for local domain, for local changes (settingstore and any additional helpers)
